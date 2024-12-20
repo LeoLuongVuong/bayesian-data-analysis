@@ -9,7 +9,7 @@ library(mcmcplots)
 pacman::p_load(tidyverse, coda,readxl,janitor)
 
 #### load dataset
-bda_data <- read_excel("DDK2022.xlsx") %>% 
+bda_data <- read_excel("data/DDK2022.xlsx") %>% 
   janitor::clean_names()
 
 which(is.na(bda_data))
