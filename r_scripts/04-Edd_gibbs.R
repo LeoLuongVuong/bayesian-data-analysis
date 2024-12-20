@@ -4,14 +4,14 @@ library(coda)
 ############ 2.3 Gibbs algorithm 
 ############ 
 gibbs_sampler <- function(N = 50000, burnin = 20000, my_seed = 2025,
-                          theta1_init =0.1,theta2_init=0.1){
+                          theta1_init =0.1,theta2_init = 0.1){
   #set seed
   set.seed(my_seed)
   #sample storage
-  theta1_sample <-theta2_sample  <- numeric(N)
+  theta1_sample <- theta2_sample  <- numeric(N)
   #initialise values
-  theta1_sample[1]= theta1_init
-  theta2_sample[1]= theta2_init
+  theta1_sample[1] = theta1_init
+  theta2_sample[1] = theta2_init
   
   for (i in 2:N) {
     theta1_sample[i] <- rnorm(1,
