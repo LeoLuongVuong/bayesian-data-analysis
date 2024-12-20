@@ -32,7 +32,7 @@ bda_data_long <- bda_data %>% pivot_longer(
 
 which(is.na(bda_data_long))
 
-write.csv(bda_data_long, 'bda_data_long', row.names = FALSE)
+write.csv(bda_data_long, 'data/bda_data_long', row.names = FALSE)
 
 
 ###################################################################
@@ -41,7 +41,23 @@ datajags <- list(
   n_munic = length(unique(bda_data_long$naam)),
   n_age = length(unique(bda_data_long$age)),
   n_sex = length(unique(bda_data_long$sex)),
-  Niag = array(c(bda_data_long$invited), dim = c(300, 5, 2)),
+  Niag = array(c(bda_data_long$invited), dim = c(300, 5, 2)), #Leo: this and the following line is not correct, 
+  # since I get that you want to create an array for different combinations of municipality, age group and sex, 
+  # but the function you are using does not give you that.
+  
+  # Leo: I suggest you use a similar function like this: (from the bayesian project last year)
+  # Prepare the data
+  # Y <- matrix(varicella_vaccine_coverage$Vaccinated, nrow = 5, ncol = 4, byrow = TRUE)
+  # N <- matrix(varicella_vaccine_coverage$Sample_Size, nrow = 5, ncol = 4, byrow = TRUE)
+  # Age <- unique(varicella_vaccine_coverage$Age)
+  # 
+  # my_data <- list(
+  #   J = nrow(Y),
+  #   M = ncol(Y),
+  #   Y = Y,
+  #   N = N,
+  #   Age = Age
+  # )
   Yiag = array(c(bda_data_long$participant), dim = c(300, 5, 2))
 )
 
@@ -86,12 +102,12 @@ params <- c("pi")
 # Run the model
 mod.fit <- jags(
   data = datajags,
-  inits = inits,
+  inits = inits, # Leo: I would try to set three different starting values for the three chains
   parameters.to.save = c("pi"),
   model.file = "model1.txt",
   n.chains = 3,
   n.iter = 2000,
-  n.burnin=1000,
+  n.burnin = 1000,
   jags.seed = 123,
   quiet = FALSE
 )
@@ -109,6 +125,7 @@ geweke.diag(bayes.mod.fit.mcmc)
 heidel.diag(bayes.mod.fit.mcmc)
 
 caterplot(bayes.mod.fit.mcmc, parms = c("pi"))
+# Leo: this looks good but I will try to make it a bit prettier 
 caterplot(bayes.mod.fit.mcmc, parms = c("pi[1]","pi[2]","pi[3]"))
 
 
@@ -133,6 +150,7 @@ ex <- MCMCchains(bayes.mod.fit.mcmc, params = 'pi')
 
 # Compute P(pi_i < 0.30) for each column
 (probs <- apply(ex, 2, function(x) mean(x < 0.30)))
+# Leo: indeed here you got 0 but it's because of the error you made earlier
 
 # Find columns where P(pi_i < 0.30) > 0.9
 columns_meeting_criteria <- which(probs > 0.9)

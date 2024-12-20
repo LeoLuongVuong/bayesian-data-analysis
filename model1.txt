@@ -1,0 +1,14 @@
+
+# ...
+model {
+  for (i in 1:n_munic) {        # Loop over municipalities
+    pi[i] ~ dbeta(1, 1)         # Prior for participation rate per municipality
+    
+    for (j in 1:n_age) {        # Loop over age groups
+      for (k in 1:n_sex) {      # Loop over genders
+        Yiag[i,j,k] ~ dbin(pi[i], Niag[i,j,k])  # Likelihood
+      }
+    }
+  }
+}
+
