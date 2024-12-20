@@ -115,7 +115,7 @@ inits2 <- function() {
   )
 }
 
-params <- c("alpha", "beta1", "beta2", "beta3", "beta4", "beta5", "gamma1", 
+params <- c("pi", "alpha", "beta1", "beta2", "beta3", "beta4", "beta5", "gamma1", 
             "gamma2", "mu.int", "sigma.int", "mu.beta",
             "sigma.beta", "mu.gamma", "sigma.gamma")
 
