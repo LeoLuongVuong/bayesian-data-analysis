@@ -5,7 +5,7 @@ library(pacman)
 library(MCMCvis)
 library(mcmcplots)
 
-DDKdata <- read.csv("bda_data.csv")
+DDKdata <- read.csv("data/bda_data.csv")
 
 
 
@@ -13,7 +13,7 @@ datajags2 <- list(
   n_munic = length(unique(DDKdata$naam)),
   n_age = length(unique(DDKdata$age)),
   n_sex = length(unique(DDKdata$sex)),
-  Niag = array(c(DDKdata$invited), dim = c(300, 5, 2)),
+  Niag = array(c(DDKdata$invited), dim = c(300, 5, 2)), # Leo: same comment as before applies here. also for the following lines.
   Yiag = array(c(DDKdata$participant), dim = c(300, 5, 2)),
   male = array(c(DDKdata$male), dim = c(300, 5, 2)),
   female = array(c(DDKdata$female), dim = c(300, 5, 2)),
@@ -69,7 +69,7 @@ model {
   
   mu.int ~ dnorm(0, 0.001) # Hyperparameter for random intercepts
   tau.int <- 1 / (sigma.int * sigma.int)
-  sigma.int ~ dunif(0, 10)
+  sigma.int ~ dunif(0, 10) # Leo: why is it like this?
   
   mu.beta ~ dnorm(0, 0.001)  # Hyperparameter for random slopes
   tau.beta <- 1 / (sigma.beta * sigma.beta)
@@ -95,6 +95,8 @@ model {
 ", fill = TRUE)
 
 sink()
+
+# Leo: overall looks ok. The only thing is that you need to make sure all the arrays are correctly created.
 
 
 # Initial values
