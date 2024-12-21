@@ -105,105 +105,91 @@ Dr. Oswaldo Gressani \\
 Let \(\boldsymbol{\theta} = (\theta_1, \theta_2)^\top \in \mathbb{R}^2\) and consider the following (unscaled) posterior density:
 
 \[
-p(\boldsymbol{\theta} \mid D) \propto \exp\left(-8\theta_1^2\theta_2^2 - 0.5\theta_1^2 - 0.5\theta_2^2 + \cos(2\pi + 0.3)\theta_1\theta_2 + 0.3\theta_1 + 0.2\theta_2 \right).
+p(\boldsymbol{\theta} \mid \mathcal{D}) \propto \exp\left(-8\theta_1^2\theta_2^2 - 0.5\theta_1^2 - 0.5\theta_2^2 + \cos(2\pi + 0.3)\theta_1\theta_2 + 0.3\theta_1 + 0.2\theta_2 \right).
 \]
 
-\subsection{Derive the conditional posteriors \(p(\theta_1 \mid \theta_2, D)\) and \(p(\theta_2 \mid \theta_1, D)\). To what well-known parametric family do these conditional posterior distributions belong? Explain mathematically how you computed the conditional posterior mean \(E(\theta_1 \mid \theta_2, D)\) and the conditional posterior variance \(V(\theta_1 \mid \theta_2, D)\).} 
-\subsubsection{Solution \(p(\theta_1 \mid \theta_2, D)\) }{\label{theta1}}
+\subsection{Derive the conditional posteriors \(p(\theta_1 \mid \theta_2, \mathcal{D})\) and \(p(\theta_2 \mid \theta_1, \mathcal{D})\). To what well-known parametric family do these conditional posterior distributions belong? Explain mathematically how you computed the conditional posterior mean \(E(\theta_1 \mid \theta_2, \mathcal{D})\) and the conditional posterior variance \(V(\theta_1 \mid \theta_2, \mathcal{D})\).} 
+\subsubsection{Solution \(p(\theta_1 \mid \theta_2, \mathcal{D})\) }{\label{theta1}}
 We first focus on deriving the conditional posterior of  \(p(\theta_1 \mid \theta_2, D)\) using the steps below:
 
 \begin{enumerate}
 \item Re-arranging terms from the joint posterior density with respect to $\theta_1$ terms we get:
 
 \begin{equation}\label{theta1eq1}
-p(\theta \mid D) \propto \exp \left( -8\theta_1^2\theta_2^2 - 0.5\theta_1^2 + \theta_1(\cos(2\pi + 0.3)\theta_2 + 0.3) \right) \times \exp \left( -0.5\theta_2^2 + 0.2\theta_2 \right)  
+p(\theta \mid \mathcal{D}) \propto \exp \left( -8\theta_1^2\theta_2^2 - 0.5\theta_1^2 + \theta_1(\cos(2\pi + 0.3)\theta_2 + 0.3) \right) \times \exp \left( -0.5\theta_2^2 + 0.2\theta_2 \right)  
 \end{equation} 
-\item Since  $\exp \left( -0.5\theta_2^2 + 0.2\theta_2 \right)$  is not a function dependent on $\theta_1$ in eqn  \ref{theta1eq1}, then $p(\theta_1 \mid \theta_2 ,D) $ can then be written as:
+\item Since  $\exp \left( -0.5\theta_2^2 + 0.2\theta_2 \right)$  is not a function dependent on $\theta_1$ in eqn  \ref{theta1eq1}, $p(\theta_1 \mid \theta_2 ,\mathcal{D}) $ can then be written as:
  \begin{equation}\label{theta1eq2}
-p(\theta_1 \mid \theta_2 ,D) \propto \exp \left( -8\theta_1^2\theta_2^2 - 0.5\theta_1^2 + \theta_1(\cos(2\pi + 0.3)\theta_2 + 0.3) \right)
-\end{equation}    
-\item Grouping the power terms together and letting $x$ be $\left(8\theta_2 +0.5\right)$  and $y$ be $\left(\cos(2\pi + 0.3)+ 0.3\right)$ eqn \ref{theta1eq2} is written as:
- \begin{equation}\label{theta1eq3}
-p(\theta_1 \mid \theta_2 ,D) \propto \exp \left( -x\theta_1^2\ + \theta_1(\cos(2\pi + 0.3)\theta_2 + 0.3) \right)
-\end{equation}   
+p(\theta_1 \mid \theta_2 ,\mathcal{D}) \propto \exp \left( -8\theta_1^2\theta_2^2 - 0.5\theta_1^2 + \theta_1(\cos(2\pi + 0.3)\theta_2 + 0.3) \right)
+\end{equation} 
 
-    \[\exp\left(-\theta_1^2\left(8 +0.5\right)+ \theta_1 \left(\cos(2\pi + 0.3)+ 0.3\right)\right).\]
-    \item let $x$ be $\left(8 +0.5\right)$ and $y$ be $\left(\cos(2\pi + 0.3)+ 0.3\right)$; equation (3) can be simplified as $\exp\left(-\theta_1^2x+ \theta_1y\right)$ which is a quadratic function of $\theta_1$
-    \item factoring out $-x$ we rewrite the bracket in (4) as $-x\theta_1^2 + y\theta_1 = -x\left(\theta_1^2 - \frac{y}{x}\theta_1\right)$
-    \item Using the completing square method and substituting $-x$ back we get
-    \[
--x\theta_1^2 + y\theta_1 = -x\left[\left(\theta_1 - \frac{y}{2x}\right)^2 - \left(\frac{y}{2x}\right)^2\right].
-\]
- \item Expanding and simplifying (6) above
- \[
--x\theta_1^2 + y\theta_1 = -x\left(\theta_1 - \frac{y}{2x}\right)^2 + \frac{y^2}{4x}
-\]
-\item Substituting everything back to the exponential we get:
-\[
-p(\theta_1 \mid \theta_2, D) \propto \exp\left(-x\left(\theta_1 - \frac{y}{2x}\right)^2 + \frac{y^2}{4x}\right).
-\]
-\item Since \(\frac{y^2}{4x}\) is independent of \(\theta_1\), this could be treated as a constant and the equation rewritten as:
-\[
-p(\theta_1 \mid \theta_2, D) \propto \exp\left(-x\left(\theta_1 - \frac{y}{2x}\right)^2\right), \text {where x} =\left(8 +0.5\right) \text { and y} = \left(\cos(2\pi + 0.3)+ 0.3\right)\] which correspond to the Gaussian Kernel. 
+This is a quadratic function of $\theta_1$ and can be rewritten as   \begin{equation}\label{theta1eq3}
+p(\theta_1 \mid \theta_2 ,\mathcal{D}) \propto \exp\left[- \frac{1}{2}\left( 16\theta_1^2\theta_2^2 + \theta_1^2 - 2*(\cos(2\pi + 0.3)\theta_2 \theta_1) - 2*(0.3\theta_1 \right)\right]
+\end{equation} 
 
+Which is the general kernel of the Gaussian distribution. 
 \end{enumerate}
 
-\subsubsection{Solution \(p(\theta_2 \mid \theta_1, D)\) }
-To derive the conditional posterior \(p(\theta_2 \mid \theta_1, D)\), we repeat the steps in section \ref{theta1} but with a focus on $\theta_2$ with $\theta_1$ treated as a constant.
+$[ f(x) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right) ]$
+
+
+\subsubsection{Solution \(p(\theta_2 \mid \theta_1, \mathcal{D})\) }
+To derive the conditional posterior \(p(\theta_2 \mid \theta_1, \mathcal{D})\), we repeat the steps in section \ref{theta1} but with a focus on $\theta_2$:
 
 \begin{enumerate}
-    \item From
-$p(\boldsymbol{\theta} \mid D) \propto \exp\left(-8\theta_1^2\theta_2^2 - 0.5\theta_1^2 - 0.5\theta_2^2 + \cos(2\pi + 0.3)\theta_1\theta_2 + 0.3\theta_1 + 0.2\theta_2 \right)$ we fix $\theta_1$ ,isolate terms with $\theta_2$ and the r.h.s could be written as:
-\[\exp\left(-8\theta_2^2 - 0.5\theta_2^2 + \cos(2\pi + 0.3)\theta_2 + 0.2\theta_2 \right)\]
-    \item let $x$ be $\left(8 +0.5\right)$ and $y$ be $\left(\cos(2\pi + 0.3)+ 0.2\right)$; the above equation can be simplified as $\exp\left(-\theta_1^2x+ \theta_1y\right)$ which is also a quadratic function of $\theta_2$
-    \item simplifying using steps 5 to 8 as in section \ref{theta1}, we get
-    \[ p(\theta_2 \mid \theta_1, D) \propto \exp\left(-x\left(\theta_2 - \frac{y}{2x}\right)^2\right), \text {where x} =\left(8 +0.5\right) \text { and y} = \left(\cos(2\pi + 0.3)+ 0.2\right)\] 
-    which correspond to the Gaussian Kernel
+    \item From the joint posterior density we re-arrange the equation w.r.t $\theta_2$ terms as:
+\begin{equation}\label{theta2eq1}
+p(\theta \mid \mathcal{D}) \propto \exp \left( -8\theta_1^2\theta_2^2 - 0.5\theta_2^2 + \theta_2(\cos(2\pi + 0.3)\theta_1 + 0.2) \right) \times \exp \left( -0.5\theta_1^2 + 0.3\theta_1 \right) 
+\end{equation} 
+\item Since  $\exp  \left( -0.5\theta_1^2 + 0.3\theta_1 \right)$  is not a function dependent on $\theta_2$ in eqn  \ref{theta2eq1}, $p(\theta_2 \mid \theta_1 ,\mathcal{D}) $ can then be written as:
+ \begin{equation}\label{theta2eq2}
+p(\theta_2 \mid \theta_1 ,\mathcal{D}) \propto \exp \left( -8\theta_1^2\theta_2^2 - 0.5\theta_2^2 + \theta_2(\cos(2\pi + 0.3)\theta_1 + 0.2) \right)
+\end{equation} 
+a quadratic function of $\theta_2$ and could then be rewritten as:
+ \begin{equation}\label{theta2eq3}
+p(\theta_1 \mid \theta_2 ,\mathcal{D}) \propto \exp\left[- \frac{1}{2}\left( 16\theta_1^2\theta_2^2 + \theta_2^2 - 2*(\cos(2\pi + 0.3)\theta_2 \theta_1) - 2*(0.2\theta_2 \right)\right]
+\end{equation} which is also a general form of the Gaussian distribution.
+   
 \end{enumerate}
-\subsubsection{Conditional posterior mean \(E(\theta_1 \mid \theta_2, D)\) and the conditional posterior variance \(V(\theta_1 \mid \theta_2, D)\).}
+\subsubsection{Conditional posterior mean \(E(\theta_1 \mid \theta_2, \mathcal{D})\) and the conditional posterior variance \(V(\theta_1 \mid \theta_2, \mathcal{D})\).}
+
 \begin{enumerate}
-    \item Starting with a the unscaled joint posterior density \[
-p(\boldsymbol{\theta} \mid D) \propto \exp\left(-8\theta_1^2\theta_2^2 - 0.5\theta_1^2 - 0.5\theta_2^2 + \cos(2\pi + 0.3)\theta_1\theta_2 + 0.3\theta_1 + 0.2\theta_2 \right).\] we start with only terms involving $\theta_1$ and rewrite the equation as: \[p(\theta_1 \mid \theta_2, D) \propto \exp\left(-8\theta_1^2\theta_2^2 - 0.5\theta_1^2 + \cos(2\pi + 0.3)\theta_1\theta_2+ 0.3\theta_1 \right) \]
-    \item  Grouping the power terms of $\theta_1$ together and rewrite the r.h.s as:
-    \[\exp\left((-8\theta_2^2 - 0.5)\theta_1^2 + (\cos(2\pi + 0.3)\theta_2+ 0.3)\theta_1 \right)\]
-    \item let $x$ be $(8\theta_2^2 - 0.5)$ and $y$ be $(\cos(2\pi + 0.3)\theta_2+ 0.3)$; equation in 2  can be simplified as $\exp\left(-\theta_1^2x+ \theta_1y\right)$ which is a quadratic function of $\theta_1$
-    \item factoring out $-x$ we rewrite the bracket in (4) as $-x\theta_1^2 + y\theta_1 = -x\left(\theta_1^2 - \frac{y}{x}\theta_1\right)$
-    \item Using the completing square method and substituting $-x$ back we get
-    \[
--x\theta_1^2 + y\theta_1 = -x\left[\left(\theta_1 - \frac{y}{2x}\right)^2 - \left(\frac{y}{2x}\right)^2\right].
-\]
- \item Expanding and simplifying (5) above
- \[
--x\theta_1^2 + y\theta_1 = -x\left(\theta_1 - \frac{y}{2x}\right)^2 + \frac{y^2}{4x}
-\]
-\item Substituting everything back to the exponential we get:
-\[
-p(\theta_1 \mid \theta_2, D) \propto \exp\left(-x\left(\theta_1 - \frac{y}{2x}\right)^2 + \frac{y^2}{4x}\right).
-\]
-\item Since \(\frac{y^2}{4x}\) is independent of \(\theta_1\), this could be treated as a constant and the equation rewritten as:
-\[
-p(\theta_1 \mid \theta_2, D) \propto \exp\left(-x\left(\theta_1 - \frac{y}{2x}\right)^2\right), \text {where x and y are as defined in step 3}.\] 
-\item Rewriting the expression in the general gaussian form \[p(\theta_1 \mid \theta_2, D) \propto \exp\left(-\frac{\left(\theta_1 - \mu_2\right)^2}{2\sigma_2^2}\right)\] and substituting the values of $x$ and $y$ in  $\mu_{\theta_1}$ and    $\sigma_{\theta_1}^2$ we get
-\[
-p \left(\theta_1 \mid \theta_2, D \right)\sim \mathcal{N}\left(-\frac{\cos(2\pi + 0.3)\theta_2 + 0.2}{2(8\theta_2^2 + 0.5)}, \frac{1}{2(8\theta_2^2 + 0.5)}\right).
-\]
-\end{enumerate} 
+\item We arrange the exponent in equation \ref{theta1eq3} according to power terms of $\theta_1$ and define $X$ and $Y$ as shown in equation \ref{condtheta1}:
+\begin{equation}\label{condtheta1}
+-\frac{1}{2} \left( \underbrace{(16\theta_2^2 + 1)}_{X}\theta_1^2 - 2\underbrace{\left(\cos(2\pi + 0.3)\theta_2 + 0.3\right)}_{Y}\theta_1 \right)
+\end{equation}
 
-Thus the  Conditional posterior mean \(E(\theta_1 \mid \theta_2, D)\)  is $-\frac{\cos(2\pi + 0.3)\theta_2 + 0.3}{2(8\theta_2^2 + 0.5)}$ and  conditional posterior variance \(V(\theta_1 \mid \theta_2, D)\) is $\frac{1}{2(8\theta_2^2 + 0.5)}$
+\item Using the completing square method we can rewrite the terms in the brackets in equation \ref{condtheta1} as 
 
-\subsection{ Based on the full conditionals obtained in the previous step, write a pseudo-code to obtain a random sample of total size 50,000 (including a burn-in of size 20,000) from $p(\theta | D)$ using the Gibbs sampler.} 
+\begin{equation}\label{condtheta2}
+     X\theta_1^2 - 2Y\theta_1 = X\left(\theta_1 - \frac{Y}{X}\right)^2 - \frac{Y^2}{X}
+\end{equation}
+\item Substituting \( X = 16\theta_2^2 + 1 \) and \( Y = \cos(2\pi + 0.3)\theta_2 + 0.3 \) in eqn \ref{condtheta2} the full conditional posterior density  can be written as:
+
+\begin{equation} \label{condtheta3}
+p(\theta_1 \mid \theta_2, \mathcal{D}) \propto \exp\left[-\frac{1}{2}(16\theta_2^2 + 1)\left(\theta_1 - \frac{\cos(2\pi + 0.3)\theta_2 + 0.3}{16\theta_2^2 + 1}\right)^2\right]
+\end{equation}
+
+which is a kernel from the Gaussian Distribution with Mean   $\mathbb{E}(\theta_1 \mid \theta_2, \mathcal{D}) = \frac{\cos(2\pi + 0.3)\theta_2 + 0.3}{16\theta_2^2 + 1}$ and variance  $  \mathrm{Var}(\theta_1 \mid \theta_2, \mathcal{D}) = \frac{1}{16\theta_2^2 + 1}$
+\end{enumerate}
+\subsection{ Based on the full conditionals obtained in the previous step, write a pseudo-code to obtain a random sample of total size 50,000 (including a burn-in of size 20,000) from $p(\theta | \mathcal{D})$ using the Gibbs sampler.} 
+\subsubsection{Solution}
+We firstly have to mathematically compute the \(E(\theta_2 \mid \theta_1, \mathcal{D})\) and the conditional posterior variance \(V(\theta_2 \mid \theta_1, \mathcal{D})\). Using the general example, if you have a conditional prior in the form of $
+p(\theta_2 \mid \theta_1, \mathcal{D}) \propto \exp\left\{ -\frac{1}{2} \left( A\theta_1^2\theta_2^2 + \theta_2^2 - 2B\theta_1\theta_2 - 2C_2\theta_2 \right) \right\}.
+$ this implies that$\theta_2 \mid \theta_1, \mathcal{D} \sim \mathcal{N} \left( \frac{B\theta_1 + C_2}{1 + A\theta_1^2}, \frac{1}{1 + A\theta_1^2} \right)$ \cite{gelman1995bayesian} \cite{author2024notes}. Substituting this in equation \ref{theta2eq3}, then we can conclude that $\theta_2 \mid \theta_1, \mathcal{D} \sim \mathcal{N} \left( \frac{\cos(2\pi + 0.3)\theta_1 + 0.2}{16\theta_1^2 + 1}, \frac{1}{16\theta_1^2 + 1}\right)$ 
+
+The full two stage Gibbs sample pseudo-code is as shown below:
 \begin{algorithm}
-Gibbs Sampler to draw from \( p(\boldsymbol{\theta} \mid D) \)
+Gibbs Sampler to draw from \( p(\boldsymbol{\theta} \mid \mathcal{D}) \)
 \begin{algorithmic}[1]
 
 \State Fix initial values \( \theta_1 = \theta_1^{(0)} \), \( \theta_2 = \theta_2^{(0)} \).
-
 \For{\( i = 1 \), \ldots , \( 50000 \)}
-    \State Sample \( \theta_1^{(i)} \sim \mathcal{N}\left(-\frac{\cos(2\pi + 0.3)\theta_2^{(i-1)} + 0.3}{2(8(\theta_2^{(i-1)})^2 + 0.5)}, \frac{1}{2(8(\theta_2^{(i-1)})^2 + 0.5)}\right) \).
-    \State Sample \( \theta_2^{(i)} \sim \mathcal{N}\left(-\frac{\cos(2\pi + 0.3)\theta_1^{(i)} + 0.2}{2(8(\theta_1^{(i)})^2 + 0.5)}, \frac{1}{2(8(\theta_1^{(i)})^2 + 0.5)}\right) \).
+    \State Sample \( \theta_1^{(i)} \sim \mathcal{N}\left(\frac{\cos(2\pi + 0.3)\theta_2^{(i-1)} + 0.3}{16(\theta_2^{(i-1)})^2 + 1)}, \frac{1}{2(8(\theta_2^{(i-1)})^2 + 1)}\right) \).
+    \State Sample \( \theta_2^{(i)} \sim \mathcal{N}\left(\frac{\cos(2\pi + 0.3)\theta_1^{(i)} + 0.2}{16(\theta_1^{(i)})^2 + 1)}, \frac{1}{16(\theta_1^{(i)})^2 + 1)}\right) \).
 \EndFor
 \State Discard the first \( b = 20,000 \) samples as burn-in
-\State Return \( \{\theta_1^{(i)}, \theta_2^{(i)}\}_{i=B+1}^{N} \) which under mild regularity and if convergence occurs can be said to be drawn from the joint posterior distributions.
+\State Return \( \{\theta_1^{(i)}, \theta_2^{(i)}\}_{i=B+1}^{N} \) which under mild regularity and if convergence occurs can be said to be drawn from \( p(\boldsymbol{\theta} \mid \mathcal{D}) \).
 \end{algorithmic}
 \end{algorithm}
 \subsection{Using R and without relying on external software/packages (except the \texttt{coda} package), write the Gibbs sampler based on your pseudo-code in step }
