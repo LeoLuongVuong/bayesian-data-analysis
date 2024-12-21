@@ -7,7 +7,7 @@ setwd(paste0(here(),"/bayesian-data-analysis"))
 ############ 2.3 Gibbs algorithm 
 ############ 
 gibbs_sampler <- function(N = 50000, burnin = 20000, my_seed = 2025,
-                          theta1_init =0.1,theta2_init = 0.1){
+                          theta1_init = 0.1, theta2_init = 0.1){
   #set seed
   set.seed(my_seed)
   #sample storage
