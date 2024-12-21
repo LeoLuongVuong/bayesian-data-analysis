@@ -113,11 +113,20 @@ p(\boldsymbol{\theta} \mid D) \propto \exp\left(-8\theta_1^2\theta_2^2 - 0.5\the
 We first focus on deriving the conditional posterior of  \(p(\theta_1 \mid \theta_2, D)\) using the steps below:
 
 \begin{enumerate}
-    \item Starting with a the joint posterior density \[
-p(\boldsymbol{\theta} \mid D) \propto \exp\left(-8\theta_1^2\theta_2^2 - 0.5\theta_1^2 - 0.5\theta_2^2 + \cos(2\pi + 0.3)\theta_1\theta_2 + 0.3\theta_1 + 0.2\theta_2 \right).\]
-    \item  We then fix  $\theta_2$ as a constant and isolate terms with $\theta_1$ and the r.h.s of the equation in (1) above can be written as:
-    \[\exp\left(-8\theta_1^2 - 0.5\theta_1^2+ \cos(2\pi + 0.3)\theta_1+ 0.3\theta_1 \right).\]
-    \item Grouping the terms together we get
+\item Re-arranging terms from the joint posterior density with respect to $\theta_1$ terms we get:
+
+\begin{equation}\label{theta1eq1}
+p(\theta \mid D) \propto \exp \left( -8\theta_1^2\theta_2^2 - 0.5\theta_1^2 + \theta_1(\cos(2\pi + 0.3)\theta_2 + 0.3) \right) \times \exp \left( -0.5\theta_2^2 + 0.2\theta_2 \right)  
+\end{equation} 
+\item Since  $\exp \left( -0.5\theta_2^2 + 0.2\theta_2 \right)$  is not a function dependent on $\theta_1$ in eqn  \ref{theta1eq1}, then $p(\theta_1 \mid \theta_2 ,D) $ can then be written as:
+ \begin{equation}\label{theta1eq2}
+p(\theta_1 \mid \theta_2 ,D) \propto \exp \left( -8\theta_1^2\theta_2^2 - 0.5\theta_1^2 + \theta_1(\cos(2\pi + 0.3)\theta_2 + 0.3) \right)
+\end{equation}    
+\item Grouping the power terms together and letting $x$ be $\left(8\theta_2 +0.5\right)$  and $y$ be $\left(\cos(2\pi + 0.3)+ 0.3\right)$ eqn \ref{theta1eq2} is written as:
+ \begin{equation}\label{theta1eq3}
+p(\theta_1 \mid \theta_2 ,D) \propto \exp \left( -x\theta_1^2\ + \theta_1(\cos(2\pi + 0.3)\theta_2 + 0.3) \right)
+\end{equation}   
+
     \[\exp\left(-\theta_1^2\left(8 +0.5\right)+ \theta_1 \left(\cos(2\pi + 0.3)+ 0.3\right)\right).\]
     \item let $x$ be $\left(8 +0.5\right)$ and $y$ be $\left(\cos(2\pi + 0.3)+ 0.3\right)$; equation (3) can be simplified as $\exp\left(-\theta_1^2x+ \theta_1y\right)$ which is a quadratic function of $\theta_1$
     \item factoring out $-x$ we rewrite the bracket in (4) as $-x\theta_1^2 + y\theta_1 = -x\left(\theta_1^2 - \frac{y}{x}\theta_1\right)$
