@@ -127,10 +127,28 @@ This is a quadratic function of $\theta_1$ and can be rewritten as   \begin{equa
 p(\theta_1 \mid \theta_2 ,\mathcal{D}) \propto \exp\left[- \frac{1}{2}\left( 16\theta_1^2\theta_2^2 + \theta_1^2 - 2*(\cos(2\pi + 0.3)\theta_2 \theta_1) - 2*(0.3\theta_1 \right)\right]
 \end{equation} 
 
-Which is the general kernel of the Gaussian distribution. 
+\item We arrange the exponent in equation \ref{theta1eq3} according to power terms of $\theta_1$ and define $X$ and $Y$ as shown in equation \ref{condtheta1}:
+\begin{equation}\label{condtheta1}
+-\frac{1}{2} \left( \underbrace{(16\theta_2^2 + 1)}_{X}\theta_1^2 - 2\underbrace{\left(\cos(2\pi + 0.3)\theta_2 + 0.3\right)}_{Y}\theta_1 \right)
+\end{equation}
+
+\item Using the completing square method we can rewrite the terms in the brackets in equation \ref{condtheta1} as 
+
+\begin{equation}\label{condtheta2}
+     X\theta_1^2 - 2Y\theta_1 = X\left(\theta_1 - \frac{Y}{X}\right)^2 - \frac{Y^2}{X}
+\end{equation} from which $\left(\theta_1 - \frac{Y}{X}\right)^2$ is the kernel of a Gaussian distribution for (that could generally be written as)  $\theta_1 \sim \mathcal{N} \left(\frac{Y}{X}, \frac{1}{X} \right)$
+\item Substituting \( X = 16\theta_2^2 + 1 \) and \( Y = \cos(2\pi + 0.3)\theta_2 + 0.3 \) in eqn \ref{condtheta2} the full conditional posterior density  can be written as:
+
+\begin{equation} \label{condtheta3}
+p(\theta_1 \mid \theta_2, \mathcal{D}) \propto \exp\left[-\frac{1}{2}(16\theta_2^2 + 1)\left(\theta_1 - \frac{\cos(2\pi + 0.3)\theta_2 + 0.3}{16\theta_2^2 + 1}\right)^2\right]
+\end{equation}
+
+We can then conclude from equation \ref{condtheta3} that
+\begin{equation}\label{condtheta4}
+\theta_1 \mid \theta_2, D \sim \mathcal{N} \left( \frac{\cos(2\pi+0.3)\theta_2 + 0.3}{1 + 16\theta_2^2}, \frac{1}{1 + 16\theta_2^2} \right)
+\end{equation}
 \end{enumerate}
 
-$[ f(x) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right) ]$
 
 
 \subsubsection{Solution \(p(\theta_2 \mid \theta_1, \mathcal{D})\) }
@@ -141,42 +159,34 @@ To derive the conditional posterior \(p(\theta_2 \mid \theta_1, \mathcal{D})\), 
 \begin{equation}\label{theta2eq1}
 p(\theta \mid \mathcal{D}) \propto \exp \left( -8\theta_1^2\theta_2^2 - 0.5\theta_2^2 + \theta_2(\cos(2\pi + 0.3)\theta_1 + 0.2) \right) \times \exp \left( -0.5\theta_1^2 + 0.3\theta_1 \right) 
 \end{equation} 
-\item Since  $\exp  \left( -0.5\theta_1^2 + 0.3\theta_1 \right)$  is not a function dependent on $\theta_2$ in eqn  \ref{theta2eq1}, $p(\theta_2 \mid \theta_1 ,\mathcal{D}) $ can then be written as:
+\item Since  $\exp  \left( -0.5\theta_1^2 + 0.3\theta_1 \right)$  is not a function dependent on $\theta_2$ in equation  \ref{theta2eq1}, $p(\theta_2 \mid \theta_1 ,\mathcal{D}) $ can then be written as:
  \begin{equation}\label{theta2eq2}
 p(\theta_2 \mid \theta_1 ,\mathcal{D}) \propto \exp \left( -8\theta_1^2\theta_2^2 - 0.5\theta_2^2 + \theta_2(\cos(2\pi + 0.3)\theta_1 + 0.2) \right)
 \end{equation} 
 a quadratic function of $\theta_2$ and could then be rewritten as:
  \begin{equation}\label{theta2eq3}
 p(\theta_2 \mid \theta_1 ,\mathcal{D}) \propto \exp\left[- \frac{1}{2}\left( 16\theta_1^2\theta_2^2 + \theta_2^2 - 2*(\cos(2\pi + 0.3)\theta_2 \theta_1) - 2*(0.2\theta_2 \right)\right]
-\end{equation} which is also a general form of the Gaussian distribution.
-   
+\end{equation}
+
+\item From literature \cite{gelman1995bayesian} \cite{author2024notes}, if you have a conditional prior in the form of 
+ \begin{equation}\label{theta2eq4}
+p(\theta_2 \mid \theta_1, \mathcal{D}) \propto \exp\left\{ -\frac{1}{2} \left( A\theta_1^2\theta_2^2 + \theta_2^2 - 2B\theta_1\theta_2 - 2C_2\theta_2 \right) \right\}
+\end{equation}
+ this implies that $\theta_2 \mid \theta_1, \mathcal{D} \sim \mathcal{N} \left( \frac{B\theta_1 + C_2}{1 + A\theta_1^2}, \frac{1}{1 + A\theta_1^2} \right)$.
+\item Substituting this in equation \ref{theta2eq3}, then we can conclude that $\theta_2 \mid \theta_1, \mathcal{D} \sim \mathcal{N} \left( \frac{\cos(2\pi + 0.3)\theta_1 + 0.2}{16\theta_1^2 + 1}, \frac{1}{16\theta_1^2 + 1}\right)$.   
 \end{enumerate}
+
+\textbf{Summary} \\
+We have shown that both conditional distributions are Gaussian (normal), a subclass of the exponential family with $\theta_1 \mid \theta_2, D \sim \mathcal{N} \left( \frac{\cos(2\pi+0.3)\theta_2 + 0.3}{1 + 16\theta_2^2}, \frac{1}{1 + 16\theta_2^2} \right)$ and $\theta_2 \mid \theta_1, \mathcal{D} \sim \mathcal{N} \left( \frac{\cos(2\pi + 0.3)\theta_1 + 0.2}{16\theta_1^2 + 1}, \frac{1}{16\theta_1^2 + 1}\right)$
+
 \subsubsection{Conditional posterior mean \(E(\theta_2 \mid \theta_1, \mathcal{D})\) and the conditional posterior variance \(V(\theta_1 \mid \theta_2, \mathcal{D})\).}
 
-\begin{enumerate}
-\item We arrange the exponent in equation \ref{theta1eq3} according to power terms of $\theta_1$ and define $X$ and $Y$ as shown in equation \ref{condtheta1}:
-\begin{equation}\label{condtheta1}
--\frac{1}{2} \left( \underbrace{(16\theta_2^2 + 1)}_{X}\theta_1^2 - 2\underbrace{\left(\cos(2\pi + 0.3)\theta_2 + 0.3\right)}_{Y}\theta_1 \right)
-\end{equation}
+We can mathematically derive the conditional posterior mean and variance as described from equations \ref{theta1eq1} - \ref{condtheta4}.  From $\theta_1 \mid \theta_2, D \sim \mathcal{N} \left( \frac{\cos(2\pi+0.3)\theta_2 + 0.3}{1 + 16\theta_2^2}, \frac{1}{1 + 16\theta_2^2} \right)$ we conclude
+$\mathbb{E}(\theta_1 \mid \theta_2, \mathcal{D}) = \frac{\cos(2\pi + 0.3)\theta_2 + 0.3}{16\theta_2^2 + 1}$ and variance  $  \mathrm{Var}(\theta_1 \mid \theta_2, \mathcal{D}) = \frac{1}{16\theta_2^2 + 1}$
 
-\item Using the completing square method we can rewrite the terms in the brackets in equation \ref{condtheta1} as 
-
-\begin{equation}\label{condtheta2}
-     X\theta_1^2 - 2Y\theta_1 = X\left(\theta_1 - \frac{Y}{X}\right)^2 - \frac{Y^2}{X}
-\end{equation}
-\item Substituting \( X = 16\theta_2^2 + 1 \) and \( Y = \cos(2\pi + 0.3)\theta_2 + 0.3 \) in eqn \ref{condtheta2} the full conditional posterior density  can be written as:
-
-\begin{equation} \label{condtheta3}
-p(\theta_1 \mid \theta_2, \mathcal{D}) \propto \exp\left[-\frac{1}{2}(16\theta_2^2 + 1)\left(\theta_1 - \frac{\cos(2\pi + 0.3)\theta_2 + 0.3}{16\theta_2^2 + 1}\right)^2\right]
-\end{equation}
-
-which is a kernel from the Gaussian Distribution with Mean   $\mathbb{E}(\theta_1 \mid \theta_2, \mathcal{D}) = \frac{\cos(2\pi + 0.3)\theta_2 + 0.3}{16\theta_2^2 + 1}$ and variance  $  \mathrm{Var}(\theta_1 \mid \theta_2, \mathcal{D}) = \frac{1}{16\theta_2^2 + 1}$
-\end{enumerate}
 \subsection{ Based on the full conditionals obtained in the previous step, write a pseudo-code to obtain a random sample of total size 50,000 (including a burn-in of size 20,000) from $p(\theta | \mathcal{D})$ using the Gibbs sampler.} 
 \subsubsection{Solution}
-We firstly have to mathematically compute the \(E(\theta_2 \mid \theta_1, \mathcal{D})\) and the conditional posterior variance \(V(\theta_2 \mid \theta_1, \mathcal{D})\). Using the general example, if you have a conditional prior in the form of $
-p(\theta_2 \mid \theta_1, \mathcal{D}) \propto \exp\left\{ -\frac{1}{2} \left( A\theta_1^2\theta_2^2 + \theta_2^2 - 2B\theta_1\theta_2 - 2C_2\theta_2 \right) \right\}.
-$ this implies that$\theta_2 \mid \theta_1, \mathcal{D} \sim \mathcal{N} \left( \frac{B\theta_1 + C_2}{1 + A\theta_1^2}, \frac{1}{1 + A\theta_1^2} \right)$ \cite{gelman1995bayesian} \cite{author2024notes}. Substituting this in equation \ref{theta2eq3}, then we can conclude that $\theta_2 \mid \theta_1, \mathcal{D} \sim \mathcal{N} \left( \frac{\cos(2\pi + 0.3)\theta_1 + 0.2}{16\theta_1^2 + 1}, \frac{1}{16\theta_1^2 + 1}\right)$ 
+
 
 The full two stage Gibbs sample pseudo-code is as shown below:
 \begin{algorithm}
