@@ -32,40 +32,28 @@ bda_data_long <- bda_data %>% pivot_longer(
 
 which(is.na(bda_data_long))
 
-write.csv(bda_data_long, 'data/bda_data_long', row.names = FALSE)
+# write.csv(bda_data_long, 'data/bda_data_long', row.names = FALSE)
 
 
 ###################################################################
+
+### sort bda_data_long in the order of naam, age, sex
+bda_data_long <- bda_data_long %>%
+  arrange(sex, age, naam)
 
 datajags <- list(
   n_munic = length(unique(bda_data_long$naam)),
   n_age = length(unique(bda_data_long$age)),
   n_sex = length(unique(bda_data_long$sex)),
-  Niag = array(c(bda_data_long$invited), dim = c(300, 5, 2)), #Leo: this and the following line is not correct, 
-  # since I get that you want to create an array for different combinations of municipality, age group and sex, 
-  # but the function you are using does not give you that.
-  
-  # Leo: I suggest you use a similar function like this: (from the bayesian project last year)
-  # Prepare the data
-  # Y <- matrix(varicella_vaccine_coverage$Vaccinated, nrow = 5, ncol = 4, byrow = TRUE)
-  # N <- matrix(varicella_vaccine_coverage$Sample_Size, nrow = 5, ncol = 4, byrow = TRUE)
-  # Age <- unique(varicella_vaccine_coverage$Age)
-  # 
-  # my_data <- list(
-  #   J = nrow(Y),
-  #   M = ncol(Y),
-  #   Y = Y,
-  #   N = N,
-  #   Age = Age
-  # )
+  Niag = array(c(bda_data_long$invited), dim = c(300, 5, 2)), 
   Yiag = array(c(bda_data_long$participant), dim = c(300, 5, 2))
 )
 
-Niag = array(c(bda_data_long$invited), dim = c(300, 5, 2))
-Niag
-n_munic <- length(unique(bda_data_long$naam))
-n_age <- length(unique(bda_data_long$age))
-n_sex <- length(unique(bda_data_long$sex))
+# Niag = array(c(bda_data_long$invited), dim = c(300, 5, 2))
+# Niag
+# n_munic <- length(unique(bda_data_long$naam))
+# n_age <- length(unique(bda_data_long$age))
+# n_sex <- length(unique(bda_data_long$sex))
 
 sink()
 
@@ -89,12 +77,19 @@ sink()
 
 
 # inits for chains
-inits1 <- list(pi = rep(0.1, 300))
-inits2 <- list(pi = rep(0.5, 300))
+# inits1 <- list(pi = rep(0.1, 300))
+# inits2 <- list(pi = rep(0.5, 300))
+# 
+# inits <- function() {
+#   list(pi = rep(0.1, 300))
+# }
 
-inits <- function() {
-  list(pi = rep(0.1, 300))
-}
+# Initial parameters
+my.inits <- list(
+  list(pi = rep(0.1, 300)),
+  list(pi = rep(0.5, 300)),
+  list(pi = rep(0.9, 300))
+)
 
 # params to monitor
 params <- c("pi")
@@ -102,7 +97,7 @@ params <- c("pi")
 # Run the model
 mod.fit <- jags(
   data = datajags,
-  inits = inits, # Leo: I would try to set three different starting values for the three chains
+  inits = my.inits, 
   parameters.to.save = c("pi"),
   model.file = "model1.txt",
   n.chains = 3,
@@ -126,8 +121,10 @@ heidel.diag(bayes.mod.fit.mcmc)
 
 caterplot(bayes.mod.fit.mcmc, parms = c("pi"))
 # Leo: this looks good but I will try to make it a bit prettier 
-caterplot(bayes.mod.fit.mcmc, parms = c("pi[1]","pi[2]","pi[3]"))
 
+# caterplot(bayes.mod.fit.mcmc, parms = c("pi[1]","pi[2]","pi[3]"))
+
+# Leo: General comment: I would definitely try to finetune the code for the MCMC diagnostics (i.e. lines 110 to 122)
 
 ### MCMCvis
 MCMCsummary(bayes.mod.fit.mcmc, round = 3)
