@@ -68,7 +68,7 @@ hist(theta2, breaks = seq(min(theta2), max(theta2), length.out = 200), freq = FA
      col="#fc8961", cex.main=0.8)
 dev.off()
 
-###summary of 
+ #of 
 summary(theta1)
 HPDinterval(as.mcmc(theta1))
 quantile(theta1, probs = c(0.025, 0.975))
@@ -78,9 +78,21 @@ HPDinterval(as.mcmc(theta2))
 quantile(theta1, probs = c(0.025, 0.975))
 
 ## Question 5 ---------------------
-#--- Geweke diagnostic
-coda::geweke.diag(as.mcmc(theta1))
-coda::geweke.diag(as.mcmc(theta2))
+#--------Geweke diagnostic
+ coda::geweke.diag(as.mcmc(theta1))
+ coda::geweke.diag(as.mcmc(theta2))
+
+###-------geweke diag plot
+t1 <- as.data.frame(theta1)
+ t2 <- as.data.frame(theta2)
+ thetadf <- cbind(t1,t2)
+ 
+png("pictures/fig05-gs-geweke.png", width = 18, 
+height = 9, units = "cm", res = 300)
+coda::geweke.plot(as.mcmc((thetadf)))
+
+dev.off()
+
 
 ## Question 6 -------------
 mean(theta1)
