@@ -7,7 +7,8 @@ library(mcmcplots)
 
 DDKdata <- read.csv("data/bda_data.csv")
 
-
+DDKdata <- DDKdata %>%
+  arrange(sex, age, naam)
 
 datajags2 <- list(
   n_munic = length(unique(DDKdata$naam)),
