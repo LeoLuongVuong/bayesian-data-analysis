@@ -5,6 +5,7 @@ library(readxl)
 library(pacman)
 library(MCMCvis)
 library(mcmcplots)
+library(ggmcmc)
 
 pacman::p_load(tidyverse, coda,readxl,janitor)
 
@@ -37,6 +38,8 @@ which(is.na(bda_data_long))
 
 ###################################################################
 
+bda_data_long <- read.csv("bda_data.csv")
+
 ### sort bda_data_long in the order of naam, age, sex
 bda_data_long <- bda_data_long %>%
   arrange(sex, age, naam)
@@ -55,7 +58,6 @@ datajags <- list(
 # n_age <- length(unique(bda_data_long$age))
 # n_sex <- length(unique(bda_data_long$sex))
 
-sink()
 
 sink("model1.txt")
 cat("
@@ -101,49 +103,257 @@ mod.fit <- jags(
   parameters.to.save = c("pi"),
   model.file = "model1.txt",
   n.chains = 3,
-  n.iter = 2000,
-  n.burnin = 1000,
+  n.iter = 10000,
+  n.burnin = 5000,
   jags.seed = 123,
   quiet = FALSE
 )
 
+par("mar")
+par(mar=c(1,1,1,1))
+
+
 traceplot(mod.fit)
 
-bayes.mod.fit.mcmc <- as.mcmc(mod.fit)
-summary(bayes.mod.fit.mcmc)
+bayes1mcmc <- as.mcmc(mod.fit)
+summary(bayes1mcmc)
 
-autocorr.plot(bayes.mod.fit.mcmc)
+jags <- jags.model(file="model1.txt",
+                   data = datajags,
+                   inits = my.inits,
+                   n.chains = 3)
+summary(jags)
 
-gelman.plot(bayes.mod.fit.mcmc)
-geweke.diag(bayes.mod.fit.mcmc)
+update(jags, 5000) # burn-in period
 
-heidel.diag(bayes.mod.fit.mcmc)
+model.sim <- coda.samples(model = jags,
+                          variable.names = params,
+                          n.iter=10000, 
+                          thin=1)
 
-caterplot(bayes.mod.fit.mcmc, parms = c("pi"))
-# Leo: this looks good but I will try to make it a bit prettier 
+#######################################################################
+library(coda)
 
-# caterplot(bayes.mod.fit.mcmc, parms = c("pi[1]","pi[2]","pi[3]"))
+pars <- names(model.sim[[1]][1,])
+# Convert model.sim into mcmc.list for processing with CODA package
+model.mcmc <- as.mcmc.list(model.sim)
 
-# Leo: General comment: I would definitely try to finetune the code for the MCMC diagnostics (i.e. lines 110 to 122)
+# posterior summary
+summary(model.mcmc)
 
-### MCMCvis
-MCMCsummary(bayes.mod.fit.mcmc, round = 3)
+# traceplot & density plot
+plot(model.mcmc)
+plot(model.mcmc, cex.axis = 0.4)
 
-MCMCplot(bayes.mod.fit.mcmc, 
+# autocorrelation and running mean plots
+autocorr.plot(model.sim)
+rmeanplot(model.sim)
+par("mar")
+
+# geweke diagnostics
+geweke.diag(model.sim)
+geweke.plot(model.sim)
+
+
+# Gelman-Rubin-Brooks plot
+png("GRB.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+gelman.plot(model.sim, ask = FALSE)
+dev.off()
+
+# HW diagnostic
+sink("model1res.txt")
+heidel.diag(model.sim)
+sink()
+
+# Raftery–Lewis (RL) diagnostic
+raftery.diag(model.sim)
+
+
+# trace and density plots
+plot(bayes1mcmc)
+ggs_traceplot(bayes1mcmcggs, family = "^pi")
+
+
+#######################################################################
+## GGMCMC
+
+# catterpillar plot
+library(ggmcmc)
+
+# caterpillar plot 
+bayes1mcmcggs <- ggs(bayes1mcmc)
+
+ggs_traceplot(bayes1mcmcggs, family = "^pi")
+
+
+ggs_histogram(bayes1mcmcggs,family ="^pi")
+
+png("pictures/caterpillar.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+ggs_caterpillar(bayes1mcmcggs, family = "^pi")
+dev.off()
+
+################################################################################
+library(MCMCvis)
+
+# traceplot & density plot
+png("pictures/trace_.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+MCMCtrace(model.sim,params='pi',pdf=FALSE)
+dev.off()
+
+# subset of traceplots
+png("pictures/trace4-6.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+MCMCtrace(model.sim, params=c('pi\\[[4-6]\\]'),ISB=FALSE,exact=FALSE,pdf=FALSE)
+dev.off()
+
+
+par(mfrow=c(1,1))
+# caterpillar plot
+MCMCplot(bayes1mcmc, 
          params = 'pi',
          rank = TRUE,
-         guide_lines = TRUE)
+         guide_lines = FALSE)
 
-MCMCtrace(bayes.mod.fit.mcmc, 
+MCMCtrace(bayes1mcmc, 
           params = c('pi[1]', 'pi[2]', 'pi[3]'), 
           ISB = FALSE, 
           exact = TRUE,
           pdf = FALSE)
 
-### Extract posterior samples for pi
+#########################################################################
+########## MCMCPLOTS
+
+library(mcmcplots)
+par("mar")
+par(mar=c(1,1,1,1))
+
+png("pictures/caterpillar.png", width = 50, 
+    height = 40, units = "cm", res = 400)
+caterplot(model.sim)
+dev.off()
+
+rmeanplot(bayes1mcmc)
+
+#######################################################################
+## BAYESPLOT
+library(bayesplot)
+
+# caterpillar plot
+png("pictures/cater1-20.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+mcmc_intervals(model.mcmc, pars=pars[1:20], prob = 0.8, inner_size = 0.9, outer_size = 0.8, prob_outer = 0.95) +
+  labs(
+    subtitle = "Caterpillar plot: pi[1:20]"
+  )
+dev.off()
+png("pictures/cater21-40.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+mcmc_intervals(model.mcmc, pars=pars[21:40], prob = 0.8, inner_size = 0.9, outer_size = 0.8, prob_outer = 0.95) +
+  labs(
+    subtitle = "Caterpillar plot: pi[21:40]"
+  )
+dev.off()
+png("pictures/cater41-60.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+mcmc_intervals(model.mcmc, pars=pars[41:60], prob = 0.8, inner_size = 0.9, outer_size = 0.8, prob_outer = 0.95) +
+  labs(
+    subtitle = "Caterpillar plot: pi[41:60]"
+  )
+dev.off()
+png("pictures/cater61-80.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+mcmc_intervals(model.mcmc, pars=pars[61:80], prob = 0.8, inner_size = 0.9, outer_size = 0.8, prob_outer = 0.95) +
+  labs(
+    subtitle = "Caterpillar plot: pi[61:80]"
+  )
+dev.off()
+png("pictures/cater81-100.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+mcmc_intervals(model.mcmc, pars=pars[81:100], prob = 0.8, inner_size = 0.9, outer_size = 0.8, prob_outer = 0.95) +
+  labs(
+    subtitle = "Caterpillar plot: pi[81:100]"
+  )
+dev.off()
+png("pictures/cater101-120.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+mcmc_intervals(model.mcmc, pars=pars[101:120], prob = 0.8, inner_size = 0.9, outer_size = 0.8, prob_outer = 0.95) +
+  labs(
+    subtitle = "Caterpillar plot: pi[101:120]"
+  )
+dev.off()
+png("pictures/cater121-140.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+mcmc_intervals(model.mcmc, pars=pars[121:140], prob = 0.8, inner_size = 0.9, outer_size = 0.8, prob_outer = 0.95) +
+  labs(
+    subtitle = "Caterpillar plot: pi[121:140]"
+  )
+dev.off()
+png("pictures/cater141-160.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+mcmc_intervals(model.mcmc, pars=pars[141:160], prob = 0.8, inner_size = 0.9, outer_size = 0.8, prob_outer = 0.95) +
+  labs(
+    subtitle = "Caterpillar plot: pi[141:160]"
+  )
+dev.off()
+png("pictures/cater161-180.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+mcmc_intervals(model.mcmc, pars=pars[161:180], prob = 0.8, inner_size = 0.9, outer_size = 0.8, prob_outer = 0.95) +
+  labs(
+    subtitle = "Caterpillar plot: pi[161:180]"
+  )
+dev.off()
+png("pictures/cater181-200.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+mcmc_intervals(model.mcmc, pars=pars[181:200], prob = 0.8, inner_size = 0.9, outer_size = 0.8, prob_outer = 0.95) +
+  labs(
+    subtitle = "Caterpillar plot: pi[181:200]"
+  )
+dev.off()
+png("pictures/cater201-240.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+mcmc_intervals(model.mcmc, pars=pars[201:220], prob = 0.8, inner_size = 0.9, outer_size = 0.8, prob_outer = 0.95) +
+  labs(
+    subtitle = "Caterpillar plot: pi[201:220]"
+  )
+dev.off()
+png("pictures/cater221-240.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+mcmc_intervals(model.mcmc, pars=pars[221:240], prob = 0.8, inner_size = 0.9, outer_size = 0.8, prob_outer = 0.95) +
+  labs(
+    subtitle = "Caterpillar plot: pi[221:240]"
+  )
+dev.off()
+png("pictures/cater241-260.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+mcmc_intervals(model.mcmc, pars=pars[241:260], prob = 0.8, inner_size = 0.9, outer_size = 0.8, prob_outer = 0.95) +
+  labs(
+    subtitle = "Caterpillar plot: pi[241:260]"
+  )
+dev.off()
+png("pictures/cater261-280.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+mcmc_intervals(model.mcmc, pars=pars[261:280], prob = 0.8, inner_size = 0.9, outer_size = 0.8, prob_outer = 0.95) +
+  labs(
+    subtitle = "Caterpillar plot: pi[261:280]"
+  )
+dev.off()
+png("pictures/cater281-300.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+mcmc_intervals(model.mcmc, pars=pars[281:300], prob = 0.8, inner_size = 0.9, outer_size = 0.8, prob_outer = 0.95) +
+  labs(
+    subtitle = "Caterpillar plot: pi[281:300]"
+  )
+dev.off()
+
+######################################################################
+
+### Extract psosterior samples for pi
 
 # extract chains
-ex <- MCMCchains(bayes.mod.fit.mcmc, params = 'pi')
+ex <- MCMCchains(bayes1mcmc, params = 'pi')
 
 # Compute P(pi_i < 0.30) for each column
 (probs <- apply(ex, 2, function(x) mean(x < 0.30)))
@@ -157,4 +367,4 @@ list(
   Columns = columns_meeting_criteria,
   Probabilities = probs[columns_meeting_criteria]
 )
-
+#############################################################################
