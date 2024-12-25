@@ -1,0 +1,64 @@
+
+# ...
+model {
+  for (i in 1:n_munic) {        # Loop over municipalities
+    for (j in 1:n_age) {        # Loop over age groups
+      for (k in 1:n_sex) {      # Loop over genders
+
+        # binomial likelihood
+        # distribution: participation rate
+        Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])  # Likelihood
+        # link function:logit of participation rate
+        
+        mu[i,j,k] <- alpha + beta1[j]*age1[i,j,k] + beta1[j]*age2[i,j,k] +
+        beta1[j]*age3[i,j,k] + beta1[j]*age4[i,j,k] + beta1[j]*age5[i,j,k] +
+         gamma1[k]*male[i,j,k]
+         
+        logit(pi[i,j,k]) <- mu[i,j,k] + b[i]
+         
+         # remove gamma2[k]*female[i,j,k] since male is a dummy in itself
+         # give all age the same beta
+         
+         # compare predicted vs observed prob to examine shrinkage
+          #B[i, j, k] <- (exp(mu[i,j,k]) / (1 + exp(mu[i,j,k]))) / (Yiag[i,j,k]/Niag[i,j,k])
+      }
+    }
+  }
+  
+  # priors for fixed effects
+  # intercepts
+  alpha ~ dnorm(0.0,1.0E-6)
+  
+  for (j in 1:n_age) {
+    beta1[j] ~ dnorm(mu.beta,tau.beta) # age effects
+    # remove beta 2 to beta 5 j
+  }
+  
+  for (k in 1:n_sex) {
+    gamma1[k] ~ dnorm(mu.gamma,tau.gamma) # gender effects
+    # remove gamma2[k]
+  }
+  
+  # mu.int ~ dnorm(0, 0.001) # Hyperparameter for random intercepts
+  # tau.int <- 1 / (sigma.int * sigma.int)
+  # sigma.int ~ dunif(0, 10)
+  
+  mu.beta ~ dnorm(0, 0.001)  # Hyperparameter for random slopes
+  tau.beta <- 1 / (sigma.beta * sigma.beta)
+  sigma.beta ~ dunif(0, 10)
+  # 
+  mu.gamma ~ dnorm(0, 0.001)  # Hyperparameter for random slopes
+  tau.gamma <- 1 / (sigma.gamma * sigma.gamma)
+  sigma.gamma ~ dunif(0, 10)
+  
+  # Random effects for municipalities
+  for (i in 1:n_munic) {
+    b[i] ~ dnorm(0.0,tau.b)
+  }
+  tau.b <- 1 / (sigma.b * sigma.b)
+  sigma.b ~ dunif(0, 10)
+  
+  
+  
+}
+
