@@ -38,7 +38,7 @@ which(is.na(bda_data_long))
 
 ###################################################################
 
-bda_data_long <- read.csv("bda_data.csv")
+bda_data_long <- read.csv("data/bda_data_long.csv")
 
 ### sort bda_data_long in the order of naam, age, sex
 bda_data_long <- bda_data_long %>%
