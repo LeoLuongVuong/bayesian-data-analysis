@@ -46,9 +46,9 @@ model {
         Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])  # Likelihood
         # link function:logit of participation rate
         
-        mu[i,j,k] <- alpha + beta1[j]*age1[i,j,k] + beta1[j]*age2[i,j,k] +
-        beta1[j]*age3[i,j,k] + beta1[j]*age4[i,j,k] + beta1[j]*age5[i,j,k] +
-         gamma1[k]*male[i,j,k]
+        mu[i,j,k] <- alpha + beta[j]*age1[i,j,k] + beta[j]*age2[i,j,k] +
+        beta[j]*age3[i,j,k] + beta[j]*age4[i,j,k] + beta[j]*age5[i,j,k] +
+         gamma[k]*male[i,j,k]
          
         logit(pi[i,j,k]) <- mu[i,j,k] + b[i]
          
@@ -66,12 +66,12 @@ model {
   alpha ~ dnorm(0.0,1.0E-6)
   
   for (j in 1:n_age) {
-    beta1[j] ~ dnorm(mu.beta,tau.beta) # age effects
+    beta[j] ~ dnorm(mu.beta,tau.beta) # age effects
     # remove beta 2 to beta 5 j
   }
   
   for (k in 1:n_sex) {
-    gamma1[k] ~ dnorm(mu.gamma,tau.gamma) # gender effects
+    gamma[k] ~ dnorm(mu.gamma,tau.gamma) # gender effects
     # remove gamma2[k]
   }
   
@@ -106,8 +106,8 @@ sink()
 inits2 <- function() {
   list(
     alpha = 0,
-    beta1 = rep(0, n_age),
-    gamma1 = rep(0, n_sex),
+    beta = rep(0, n_age),
+    gamma = rep(0, n_sex),
     b = rep(0, n_munic),
     #mu.int = rnorm(1, 0, 1),
     sigma.b = runif(1, 0, 10), #, n_munic
@@ -118,7 +118,7 @@ inits2 <- function() {
   )
 }
 
-params <- c("pi", "alpha", "beta1", "gamma1",
+params <- c("pi", "alpha", "beta", "gamma",
            'b', "mu.beta", "sigma.beta",
            "mu.gamma", "sigma.gamma", "sigma.b") #, 'B', "mu", 
 #"mu.int", "sigma.int", "mu.beta", "sigma.beta",
@@ -139,7 +139,7 @@ mod2.fit <- jags(
 
 ## trace plot ---
 mcmc_samples <- as.mcmc(mod2.fit)
-traceplot(mcmc_samples[, c("alpha", "beta1[1]", "gamma1[1]", "sigma.b")])
+traceplot(mcmc_samples[, c("alpha", "beta[1]", "gamma[1]", "sigma.b")])
 
 autocorr.plot(bayes2mcmc)
 geweke.diag(bayes2mcmc)
