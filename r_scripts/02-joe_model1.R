@@ -64,7 +64,7 @@ cat("
 # ...
 model {
   for (i in 1:n_munic) {        # Loop over municipalities
-    pi[i] ~ dbeta(alpha, beta)         # Prior for participation rate per municipality
+    pi[i] ~ dbeta(0.5, 0.5)         # Prior for participation rate per municipality
     
     for (j in 1:n_age) {        # Loop over age groups
       for (k in 1:n_sex) {      # Loop over genders
@@ -72,9 +72,6 @@ model {
       }
     }
   }
-  # Prior distributions for population parameters
-    alpha ~ dexp(0.1)
-    beta ~  dexp(0.1)
 }
 ", fill = TRUE)
 
@@ -91,19 +88,19 @@ sink()
 
 # Initial parameters
 my.inits <- list(
-  list(pi = rep(0.1, 300), alpha=rep(1,300), beta=rep(1,300)),
-  list(pi = rep(0.5, 300), alpha=rep(0.5, 300), beta=rep(0.5, 300)),
-  list(pi = rep(0.9, 300), alpha=rep(1.5,300), beta=rep(1.5,300))
+  list(pi = rep(0.1, 300)),
+  list(pi = rep(0.5, 300)),
+  list(pi = rep(0.9, 300))
 )
 
 # params to monitor
-params <- c("pi", 'alpha', 'beta')
+params <- c("pi")
 
 # Run the model
 mod.fit <- jags(
   data = datajags,
   inits = my.inits, 
-  parameters.to.save = c("pi", 'alpha', 'beta'),
+  parameters.to.save = c("pi"),
   model.file = "model1.txt",
   n.chains = 3,
   n.iter = 10000,
@@ -168,7 +165,7 @@ png("pictures/geweke.png", width = 30,
 geweke.plot(model.sim)
 dev.off()
 
-# GRB diagnostic
+# BGR diagnostic
 gelman.diag(model.sim)
 png("pictures/GRB.png", width = 30, 
     height = 20, units = "cm", res = 300)
@@ -357,8 +354,7 @@ dev.off()
 ex <- MCMCchains(bayes1mcmc, params = 'pi')
 
 # Compute P(pi_i < 0.30) for each column
-(probs <- apply(ex, 2, function(x) mean(x < 0.30)))
-# Leo: indeed here you got 0 but it's because of the error you made earlier
+(probs <- apply(ex, 2, function(x) mean(x < 0.30)))s
 
 # Find columns where P(pi_i < 0.30) > 0.9
 columns_meeting_criteria <- which(probs > 0.9)
