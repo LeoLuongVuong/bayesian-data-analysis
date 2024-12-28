@@ -7,57 +7,47 @@ model {
 
         # binomial likelihood
         # distribution: participation rate
-        Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])  # Likelihood
+       Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])  # Likelihood
+       
+       logit(pi[i,j,k]) <- beta[1] + beta[2]*age1[i,j,k] + beta[3]*age2[i,j,k] + 
+        
+        beta[4]*age3[i,j,k] + beta[5]*age4[i,j,k] + beta[6]*sex_num[i,j,k] + b[i]
+       
+        
         # link function:logit of participation rate
         
-        mu[i,j,k] <- alpha + beta1*age_num[i,j,k] + gamma1*sex_num[i,j,k]
+        # mu[i, j, k] <- beta[1] + beta[2]*age1[i,j,k] + beta[3]*age2[i,j,k] + 
+        # beta[4]*age3[i,j,k] + beta[5]*age4[i,j,k] + beta[6]*sex_num[i,j,k]
          
-        logit(pi[i,j,k]) <- mu[i,j,k] + b[i]
+        # logit(pi[i,j,k]) <- mu[i, j, k] + b[i]
          
          # remove gamma2[k]*female[i,j,k] since male is a dummy in itself
          # give all age the same beta
          
          # compare predicted vs observed prob to examine shrinkage
-          #B[i, j, k] <- (exp(mu[i,j,k]) / (1 + exp(mu[i,j,k]))) / (Yiag[i,j,k]/Niag[i,j,k])
+          # B[i, j, k] <- (exp(mu[i,j,k]) / (1 + exp(mu[i,j,k]))) / (Yiag[i,j,k]/Niag[i,j,k])
       }
     }
   }
   
   # priors for fixed effects
   # intercepts
-  alpha ~ dnorm(0.0,1.0E-2)
+  #alpha ~ dnorm(0.0,1.0E-2)
   
-  beta1 ~ dnorm(0.0,1.0E-2)
-  
-  gamma1 ~ dnorm(0.0,1.0E-2)
-  
-  # for (j in 1:n_age) {
-  #    # age effects
-  #   # remove beta 2 to beta 5 j
-  # }
-  
-  # for (k in 1:n_sex) {
-  #    # gender effects
-  #   # remove gamma2[k]
-  # }
-  
-  # mu.int ~ dnorm(0, 0.001) # Hyperparameter for random intercepts
-  # tau.int <- 1 / (sigma.int * sigma.int)
-  # sigma.int ~ dunif(0, 10)
-  
-  # mu.beta ~ dnorm(0, 0.001)  # Hyperparameter for random slopes
-  # tau.beta <- 1 / (sigma.beta * sigma.beta)
-  # sigma.beta ~ dunif(0, 10)
-  # # 
-  # mu.gamma ~ dnorm(0, 0.001)  # Hyperparameter for random slopes
-  # tau.gamma <- 1 / (sigma.gamma * sigma.gamma)
-  # sigma.gamma ~ dunif(0, 10)
+  #gamma1 ~ dnorm(0.0,1.0E-2)
   
   # Random effects for municipalities
   for (i in 1:n_munic) {
     b[i] ~ dnorm(0.0,tau.b)
   }
-  tau.b <- 1 / (sigma.b * sigma.b)
-  sigma.b ~ dunif(0, 10)
+  # priors for random effects
+  sigma.b ~ dunif(0,100)
+	sigma.2b  <- pow(sigma.b, 2)
+	tau.b <- pow(sigma.2b, -1)
+	
+	for (l in 1:6) {
+     # age effects
+   beta[l]  ~ dnorm(0.0,1.0E-4)
+  }
 }
 

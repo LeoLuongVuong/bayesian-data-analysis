@@ -7,39 +7,38 @@ library(pacman)
 library(MCMCvis)
 library(mcmcplots)
 
-# bda_data_long <- read.csv("data/bda_data.csv")
-# 
-# bda_data_long <- bda_data_long  |> 
-#   arrange(sex, age, naam)
-
 # data manipulation --------------------------------
 
-bda_data_long <- read.csv("data/bda_data_long.csv")
+bda_data <- read.csv("data/bda_data.csv")
 
-bda_data_long <- bda_data_long %>%
+bda_data <- bda_data %>%
   arrange(sex, age, naam)
 
 # sex and age to factors
-bda_data_long$sex <- as.factor(bda_data_long$sex)
-bda_data_long$age <- as.factor(bda_data_long$age)
-bda_data_long$age_num <- as.numeric(bda_data_long$age)
-bda_data_long$sex_num <- ifelse(bda_data_long$sex == "female", 0, 1)
+bda_data$sex <- as.factor(bda_data$sex)
+bda_data$age <- as.factor(bda_data$age)
+bda_data$age_num <- as.numeric(bda_data$age)
+bda_data$sex_num <- ifelse(bda_data$sex == "female", 0, 1)
 
 datajags2 <- list(
-  n_munic = length(unique(bda_data_long$naam)),
-  n_age = length(unique(bda_data_long$age)),
-  n_sex = length(unique(bda_data_long$sex)),
-  Niag = array(c(bda_data_long$invited), dim = c(300, 5, 2)), 
-  Yiag = array(c(bda_data_long$participant), dim = c(300, 5, 2)),
-  sex_num = array(c(bda_data_long$sex_num), dim = c(300, 5, 2)),
-  age_num = array(c(bda_data_long$age_num), dim = c(300, 5, 2))
+  n_munic = length(unique(bda_data$naam)),
+  n_age = length(unique(bda_data$age)),
+  n_sex = length(unique(bda_data$sex)),
+  Niag = array(c(bda_data$invited), dim = c(300, 5, 2)), 
+  Yiag = array(c(bda_data$participant), dim = c(300, 5, 2)),
+  sex_num = array(c(bda_data$sex_num), dim = c(300, 5, 2)),
+  age1 = array(c(bda_data$age1), dim = c(300, 5, 2)),
+  age2 = array(c(bda_data$age2), dim = c(300, 5, 2)),
+  age3 = array(c(bda_data$age3), dim = c(300, 5, 2)),
+  age4 = array(c(bda_data$age4), dim = c(300, 5, 2))
+  
 )
 
-n_munic = length(unique(bda_data_long$naam))
-n_age = length(unique(bda_data_long$age))
-n_sex = length(unique(bda_data_long$sex))
-# agec = array(c(bda_data_long$agec), dim = c(300, 5, 2))
-# gender = array(c(bda_data_long$sex), dim = c(300, 5, 2))
+n_munic = length(unique(bda_data$naam))
+n_age = length(unique(bda_data$age))
+n_sex = length(unique(bda_data$sex))
+# agec = array(c(bda_data$agec), dim = c(300, 5, 2))
+# gender = array(c(bda_data$sex), dim = c(300, 5, 2))
 
 # Q2 - Leo ----
 
@@ -53,95 +52,79 @@ model {
 
         # binomial likelihood
         # distribution: participation rate
-        Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])  # Likelihood
+       Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])  # Likelihood
+       
+       logit(pi[i,j,k]) <- beta[1] + beta[2]*age1[i,j,k] + beta[3]*age2[i,j,k] + 
+        
+        beta[4]*age3[i,j,k] + beta[5]*age4[i,j,k] + beta[6]*sex_num[i,j,k] + b[i]
+       
+        
         # link function:logit of participation rate
         
-        mu[i,j,k] <- alpha + beta1*age_num[i,j,k] + gamma1*sex_num[i,j,k]
+        # mu[i, j, k] <- beta[1] + beta[2]*age1[i,j,k] + beta[3]*age2[i,j,k] + 
+        # beta[4]*age3[i,j,k] + beta[5]*age4[i,j,k] + beta[6]*sex_num[i,j,k]
          
-        logit(pi[i,j,k]) <- mu[i,j,k] + b[i]
+        # logit(pi[i,j,k]) <- mu[i, j, k] + b[i]
          
          # remove gamma2[k]*female[i,j,k] since male is a dummy in itself
          # give all age the same beta
          
          # compare predicted vs observed prob to examine shrinkage
-          #B[i, j, k] <- (exp(mu[i,j,k]) / (1 + exp(mu[i,j,k]))) / (Yiag[i,j,k]/Niag[i,j,k])
+          # B[i, j, k] <- (exp(mu[i,j,k]) / (1 + exp(mu[i,j,k]))) / (Yiag[i,j,k]/Niag[i,j,k])
       }
     }
   }
   
   # priors for fixed effects
   # intercepts
-  alpha ~ dnorm(0.0,1.0E-2)
+  #alpha ~ dnorm(0.0,1.0E-2)
   
-  beta1 ~ dnorm(0.0,1.0E-2)
-  
-  gamma1 ~ dnorm(0.0,1.0E-2)
-  
-  # for (j in 1:n_age) {
-  #    # age effects
-  #   # remove beta 2 to beta 5 j
-  # }
-  
-  # for (k in 1:n_sex) {
-  #    # gender effects
-  #   # remove gamma2[k]
-  # }
-  
-  # mu.int ~ dnorm(0, 0.001) # Hyperparameter for random intercepts
-  # tau.int <- 1 / (sigma.int * sigma.int)
-  # sigma.int ~ dunif(0, 10)
-  
-  # mu.beta ~ dnorm(0, 0.001)  # Hyperparameter for random slopes
-  # tau.beta <- 1 / (sigma.beta * sigma.beta)
-  # sigma.beta ~ dunif(0, 10)
-  # # 
-  # mu.gamma ~ dnorm(0, 0.001)  # Hyperparameter for random slopes
-  # tau.gamma <- 1 / (sigma.gamma * sigma.gamma)
-  # sigma.gamma ~ dunif(0, 10)
+  #gamma1 ~ dnorm(0.0,1.0E-2)
   
   # Random effects for municipalities
   for (i in 1:n_munic) {
     b[i] ~ dnorm(0.0,tau.b)
   }
-  tau.b <- 1 / (sigma.b * sigma.b)
-  sigma.b ~ dunif(0, 10)
+  # priors for random effects
+  sigma.b ~ dunif(0,100)
+	sigma.2b  <- pow(sigma.b, 2)
+	tau.b <- pow(sigma.2b, -1)
+	
+	for (l in 1:6) {
+     # age effects
+   beta[l]  ~ dnorm(0.0,1.0E-4)
+  }
 }
 ", fill = TRUE)
 
 sink()
-
-
-# Initial values
+  
 inits2 <- list(
   list(
-    alpha = 0.5,
-    beta1 = 0.5,
-    gamma1 = 0,
-    b = rep(0, n_munic),
-    sigma.b = runif(1, 0, 10) #, n_munic
-    # mu.beta = rnorm(1, 0, 1),
-    # sigma.beta = runif(1, 0, 10),
-    # mu.gamma = rnorm(1, 0, 1),
-    # sigma.gamma = runif(1, 0, 10)
-  ),
-  list(
-    alpha = -0.5,
-    beta1 = -0.5,
-    gamma1 = 0.5,
-    b = rep(0, n_munic),
-    sigma.b = runif(1, 0, 10)),
-list(
-  alpha = -1,
-  beta1 = -1,
-  gamma1 = -0.5,
-  b = rep(0, n_munic),
-  sigma.b = runif(1, 0, 10))
+    #alpha = rnorm(1, 0, 1),
+    beta = rnorm(6, 0, 1),
+    #gamma1 = rnorm(1, 0, 1),
+    #b = rnorm(n_munic, 0, 1),
+    sigma.b = runif(1, 0, 10)
+  ), list(
+    #alpha = rnorm(1, 0, 1),
+    beta = rnorm(6, 0, 1),
+    #gamma1 = rnorm(1, 0, 1),
+    #b = rnorm(n_munic, 0, 1),
+    sigma.b = runif(1, 0, 10)
+  ), list(
+    #alpha = rnorm(1, 0, 1),
+    beta = rnorm(6, 0, 1),
+    #gamma1 = rnorm(1, 0, 1),
+    #b = rnorm(n_munic, 0, 1),
+    sigma.b = runif(1, 0, 10)
+  )
 )
 
 # update initial values for better convergence
 
-params <- c("pi", "alpha", "beta1", "gamma1",
-           'b', "sigma.b") #, 'B', "mu", 
+params <- c("pi", "alpha", "beta", 
+           'b', "sigma.b") #, 'B', "mu", "gamma1",
 #"mu.int", "sigma.int", "mu.beta", "sigma.beta",
 
 # Run the model
@@ -151,7 +134,7 @@ mod2.fit <- jags(
   parameters.to.save = params,
   model.file = "model2.txt",
   n.chains = 3,
-  n.iter = 2000,
+  n.iter = 5000,
   n.burnin = 500,
   jags.seed = 123,
   quiet = FALSE
