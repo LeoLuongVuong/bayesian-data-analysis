@@ -612,7 +612,7 @@ inits2 <- function() {
   )
 }
 
-params <- c("alpha", "beta1", "gamma1", "mu.int", "sigma.int")
+params <- c("alpha", "beta1", "gamma1", "mu.int", "sigma.int", 'pi')
 
 ## Run the model ----
 mod2.fit <- jags(
@@ -621,11 +621,14 @@ mod2.fit <- jags(
   parameters.to.save = params,
   model.file = "model2.txt",
   n.chains = 3,
-  n.iter = 2000,
-  n.burnin = 500,
+  n.iter = 20000,
+  n.burnin = 5000,
   jags.seed = 123,
   quiet = FALSE
 )
+
+# print pD and DIC
+print(mod2.fit)
 
 ## diagnostics ----
 mcmc_samples <- as.mcmc(mod2.fit)
@@ -633,3 +636,17 @@ traceplot(mcmc_samples[, c("alpha[1]", "beta1[1]", "beta1[2]", "beta1[3]",
                            "beta1[4]", "gamma1[2]", "mu.int", 
                            "sigma.int", "alpha[2]", "alpha[3]", "alpha[4]", 
                            "alpha[5]")])
+
+## autocorrelation
+autocorr.diag(as.mcmc(mod2.fit))
+autocorr.plot(as.mcmc(mod2.fit))
+
+## geweke diag
+geweke.plot(as.mcmc(mod2.fit))
+
+# Heidel diag
+heidel.diag(as.mcmc(mod2.fit))
+
+# BGR diagnostics
+gelman.diag(as.mcmc(mod2.fit))
+
