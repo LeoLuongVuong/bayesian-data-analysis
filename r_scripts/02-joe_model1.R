@@ -64,7 +64,7 @@ cat("
 # ...
 model {
   for (i in 1:n_munic) {        # Loop over municipalities
-    pi[i] ~ dbeta(1, 1)         # Prior for participation rate per municipality
+    pi[i] ~ dbeta(0.5, 0.5)         # Prior for participation rate per municipality
     
     for (j in 1:n_age) {        # Loop over age groups
       for (k in 1:n_sex) {      # Loop over genders
@@ -130,9 +130,12 @@ model.sim <- coda.samples(model = jags,
                           variable.names = params,
                           n.iter=10000, 
                           thin=1)
-
+sink("model1res2.txt")
+summary(model.sim)
+sink()
 #######################################################################
 library(coda)
+
 
 pars <- names(model.sim[[1]][1,])
 # Convert model.sim into mcmc.list for processing with CODA package
@@ -146,19 +149,27 @@ plot(model.mcmc)
 plot(model.mcmc, cex.axis = 0.4)
 
 # autocorrelation and running mean plots
+png("pictures/autocorr.png", width = 30, 
+    height = 20, units = "cm", res = 300)
 autocorr.plot(model.sim)
+dev.off()
 rmeanplot(model.sim)
-par("mar")
+
 
 # geweke diagnostics
 geweke.diag(model.sim)
+par("mar")
+par(mar=c(1,1,1,1))
+png("pictures/geweke.png", width = 30, 
+    height = 20, units = "cm", res = 300)
 geweke.plot(model.sim)
+dev.off()
 
-
-# Gelman-Rubin-Brooks plot
-png("GRB.png", width = 18, 
-    height = 9, units = "cm", res = 300)
-gelman.plot(model.sim, ask = FALSE)
+# BGR diagnostic
+gelman.diag(model.sim)
+png("pictures/GRB.png", width = 30, 
+    height = 20, units = "cm", res = 300)
+gelman.plot(model.sim)
 dev.off()
 
 # HW diagnostic
@@ -204,25 +215,12 @@ MCMCtrace(model.sim,params='pi',pdf=FALSE)
 dev.off()
 
 # subset of traceplots
-png("pictures/trace4-6.png", width = 18, 
+png("pictures/trace6-9.png", width = 18, 
     height = 9, units = "cm", res = 300)
-MCMCtrace(model.sim, params=c('pi\\[[4-6]\\]'),ISB=FALSE,exact=FALSE,pdf=FALSE)
+MCMCtrace(model.sim, params=c('pi\\[[6-9]\\]'),ISB=FALSE,exact=FALSE,pdf=FALSE)
 dev.off()
 
-
-par(mfrow=c(1,1))
-# caterpillar plot
-MCMCplot(bayes1mcmc, 
-         params = 'pi',
-         rank = TRUE,
-         guide_lines = FALSE)
-
-MCMCtrace(bayes1mcmc, 
-          params = c('pi[1]', 'pi[2]', 'pi[3]'), 
-          ISB = FALSE, 
-          exact = TRUE,
-          pdf = FALSE)
-
+MCMCsummary(model.sim)
 #########################################################################
 ########## MCMCPLOTS
 
@@ -312,7 +310,7 @@ mcmc_intervals(model.mcmc, pars=pars[181:200], prob = 0.8, inner_size = 0.9, out
     subtitle = "Caterpillar plot: pi[181:200]"
   )
 dev.off()
-png("pictures/cater201-240.png", width = 18, 
+png("pictures/cater201-220.png", width = 18, 
     height = 9, units = "cm", res = 300)
 mcmc_intervals(model.mcmc, pars=pars[201:220], prob = 0.8, inner_size = 0.9, outer_size = 0.8, prob_outer = 0.95) +
   labs(
@@ -350,14 +348,13 @@ dev.off()
 
 ######################################################################
 
-### Extract psosterior samples for pi
+### Extract posterior samples for pi
 
 # extract chains
 ex <- MCMCchains(bayes1mcmc, params = 'pi')
 
 # Compute P(pi_i < 0.30) for each column
-(probs <- apply(ex, 2, function(x) mean(x < 0.30)))
-# Leo: indeed here you got 0 but it's because of the error you made earlier
+(probs <- apply(ex, 2, function(x) mean(x < 0.30)))s
 
 # Find columns where P(pi_i < 0.30) > 0.9
 columns_meeting_criteria <- which(probs > 0.9)
@@ -368,3 +365,24 @@ list(
   Probabilities = probs[columns_meeting_criteria]
 )
 #############################################################################
+library(dplyr)
+library(readxl)
+
+# summary statistics
+model1res <- read_excel("model1res.xlsx")
+
+# municipality with max and min rate
+(maxpi <- model1res %>%
+  filter(mean == min(mean)) %>%
+  select(pi, mean))
+
+# Count how many pi have mean >= 0.50
+(count <- model1res %>%
+  filter(mean >= 0.50) %>%
+  summarise(count = n()))
+
+# Count how many pi have mean < 0.25
+(count <- model1res %>%
+    filter(mean < 0.25) %>%
+    #summarise(count = n()) %>%
+    select(pi, mean))

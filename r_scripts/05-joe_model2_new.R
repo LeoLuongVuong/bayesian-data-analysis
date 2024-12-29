@@ -98,7 +98,7 @@ model {
 ", fill = TRUE)
 
 sink()
-  
+
 inits2 <- list(
   list(
     beta1 = 0,
@@ -633,4 +633,3 @@ traceplot(mcmc_samples[, c("alpha[1]", "beta1[1]", "beta1[2]", "beta1[3]",
                            "beta1[4]", "gamma1[2]", "mu.int", 
                            "sigma.int", "alpha[2]", "alpha[3]", "alpha[4]", 
                            "alpha[5]")])
-
