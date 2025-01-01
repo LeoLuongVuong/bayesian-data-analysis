@@ -621,32 +621,164 @@ mod2.fit <- jags(
   parameters.to.save = params,
   model.file = "model2.txt",
   n.chains = 3,
-  n.iter = 20000,
+  n.iter = 10000,
   n.burnin = 5000,
   jags.seed = 123,
   quiet = FALSE
 )
 
-# print pD and DIC
+# print pD and DIC ---------------------------------------
+options(max.print=999999)
+sink("model2res1.txt")
 print(mod2.fit)
+sink()
 
-## diagnostics ----
+options(max.print=999999)
+sink("model2res1.txt")
+bayes2mcmc <- as.mcmc(mod2.fit)
+summary(bayes2mcmc)
+sink()
+
+summary(bayes2mcmc)
+## diagnostics ----------------------------------------------
 mcmc_samples <- as.mcmc(mod2.fit)
-traceplot(mcmc_samples[, c("alpha[1]", "beta1[1]", "beta1[2]", "beta1[3]", 
-                           "beta1[4]", "gamma1[2]", "mu.int", 
-                           "sigma.int", "alpha[2]", "alpha[3]", "alpha[4]", 
-                           "alpha[5]")])
+
+png("pictures/mod2trace.png", width = 18, 
+    height = 15, units = "cm", res = 300)
+#traceplot(mcmc_samples[, c("alpha[1]", "beta1[1]", "beta1[2]", "beta1[3]", 
+#                           "beta1[4]", "gamma1[2]", "mu.int", 
+#                           "sigma.int", "alpha[2]", "alpha[3]", "alpha[4]", 
+#                           "alpha[5]")])
+dev.off()
+
+## library coda -----------------------------------------------
+library(coda)
 
 ## autocorrelation
 autocorr.diag(as.mcmc(mod2.fit))
 autocorr.plot(as.mcmc(mod2.fit))
 
-## geweke diag
-geweke.plot(as.mcmc(mod2.fit))
+png("pictures/mod2rmean_sigmaint.png", width = 18, 
+    height = 10, units = "cm", res = 300)
+rmeanplot(as.mcmc(mod2.fit), parms = "sigma.int")
+dev.off()
+
+## geweke diag - works
+png("pictures/mod2geweke_sigmaint.png", width = 18, 
+    height = 10, units = "cm", res = 300)
+geweke.plot(as.mcmc(mod2.fit), parms = "sigma.int")
+dev.off()
 
 # Heidel diag
 heidel.diag(as.mcmc(mod2.fit))
 
 # BGR diagnostics
 gelman.diag(as.mcmc(mod2.fit))
+gelman.plot(as.mcmc(mod2.fit))
+
+# Raftery-Lewis
+raftery.diag(as.mcmc(mod2.fit))
+
+# HW diagnostic
+sink("model2heidel.txt")
+heidel.diag(as.mcmc(mod2.fit))
+sink()
+
+### library ggmcmc -----------------------------------------------
+library(ggmcmc)
+bayes2mcmcggs <- ggs(bayes2mcmc)
+
+png("pictures/mod2trace_muint.png", width = 18, 
+    height = 10, units = "cm", res = 300)
+ggs_traceplot(bayes2mcmcggs, family = "mu.int")
+dev.off()
+
+png("pictures/mod2autocorr_gamma.png", width = 18, 
+    height = 10, units = "cm", res = 300)
+ggs_autocorrelation(bayes2mcmcggs, family = "gamma1")
+dev.off()
+
+png("pictures/mod2geweke_sigmaint.png", width = 18, 
+    height = 10, units = "cm", res = 300)
+ggs_geweke(bayes2mcmcggs, family = "sigma.int")
+dev.off()
+
+png("pictures/mod2gbr_gamma.png", width = 18, 
+    height = 10, units = "cm", res = 300)
+ggs_grb(bayes2mcmcggs, family = "gamma1")
+dev.off()
+
+
+print(ggs_diagnostics(bayes2mcmcggs, family = "pi"), n=500)
+
+#------------------------------------------------------------------
+### Extract posterior samples for pi
+
+# extract chains
+ex2 <- MCMCchains(bayes2mcmc, params = 'pi')
+
+# Compute P(pi_i < 0.30) for each column
+(probs2 <- apply(ex2, 2, function(x) mean(x < 0.30)))
+
+# Find columns where P(pi_i < 0.30) > 0.9
+select2 <- which(probs2 > 0.9)
+
+# Display results
+list(
+  Columns = select2,
+  Probabilities = probs[select2]
+)
+
+
+### --------------------------------------------------------
+library(BayesFactor)
+load(file='mod.fit')
+
+compare(mod.fit, mod2.fit) # doesnt work
+
+
+### outliers detection -------------------------------------------------------
+# Load posterior samples from JAGS
+library(coda)
+
+jags2 <- jags.model(file="model2.txt",
+                   data = datajags2,
+                   inits = inits2,
+                   n.chains = 3)
+
+update(jags2, 5000) # burn-in period
+
+samples <- coda.samples(model = jags2,
+                          variable.names = params,
+                          n.iter=10000, 
+                          thin=5)
+
+
+# Example: Assuming `samples` contains posterior samples of `pi`
+posterior_pi <- as.matrix(samples[, grep("pi\\[", colnames(samples))])
+
+# Dimensions
+n_munic <- dim(datajags2$Niag)[1]
+n_age <- dim(datajags2$Niag)[2]
+n_sex <- dim(datajags2$Niag)[3]
+
+# Reshape into a 4D array
+n_iter <- nrow(posterior_pi)  # Number of MCMC iterations
+posterior_pi_array <- array(posterior_pi, dim = c(n_iter, n_munic, n_age, n_sex))
+
+
+# Predicted means array
+predicted_Y <- array(NA, dim = dim(datajags2$Yiag))
+
+# Loop through dimensions to compute means
+for (i in 1:n_munic) {
+  for (j in 1:n_age) {
+    for (k in 1:n_sex) {
+      predicted_Y[i, j, k] <- mean(posterior_pi_array[, i, j, k] * datajags2$Niag[i, j, k])
+    }
+  }
+}
+
+
+
 
