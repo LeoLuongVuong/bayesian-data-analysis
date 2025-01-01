@@ -38,7 +38,7 @@ which(is.na(bda_data_long))
 
 ###################################################################
 
-bda_data_long <- read.csv("data/bda_data_long.csv")
+bda_data_long <- read.csv("bda_data.csv")
 
 ### sort bda_data_long in the order of naam, age, sex
 bda_data_long <- bda_data_long %>%
@@ -109,6 +109,7 @@ mod.fit <- jags(
   quiet = FALSE
 )
 
+
 par("mar")
 par(mar=c(1,1,1,1))
 
@@ -118,11 +119,19 @@ traceplot(mod.fit)
 bayes1mcmc <- as.mcmc(mod.fit)
 summary(bayes1mcmc)
 
+# model11.sim <- coda.samples(mod.fit, c('pi'), n.iter=10000)
+
+#############################################
+## information criterion
+print(mod.fit)
+
+############################################
 jags <- jags.model(file="model1.txt",
                    data = datajags,
                    inits = my.inits,
                    n.chains = 3)
 summary(jags)
+print(jags)
 
 update(jags, 5000) # burn-in period
 
@@ -149,6 +158,7 @@ plot(model.mcmc)
 plot(model.mcmc, cex.axis = 0.4)
 
 # autocorrelation and running mean plots
+#autocorr.diag(as.mcmc(mod.fit))
 png("pictures/autocorr.png", width = 30, 
     height = 20, units = "cm", res = 300)
 autocorr.plot(model.sim)
@@ -179,6 +189,7 @@ sink()
 
 # Raftery–Lewis (RL) diagnostic
 raftery.diag(model.sim)
+raftery.diag(as.mcmc(mod.fit))
 
 
 # trace and density plots
@@ -195,8 +206,11 @@ library(ggmcmc)
 # caterpillar plot 
 bayes1mcmcggs <- ggs(bayes1mcmc)
 
-ggs_traceplot(bayes1mcmcggs, family = "^pi")
-
+ggs_traceplot(bayes1mcmcggs, family = "deviance")
+ggs_geweke(bayes1mcmcggs, family = "deviance")
+ggs_autocorrelation(bayes1mcmcggs, family = "deviance")
+ggs_grb(bayes1mcmcggs, family = "deviance")
+ggs_diagnostics(bayes1mcmcggs, family = "deviance")
 
 ggs_histogram(bayes1mcmcggs,family ="^pi")
 
