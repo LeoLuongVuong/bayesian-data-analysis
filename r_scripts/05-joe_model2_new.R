@@ -460,7 +460,7 @@ traceplot(mcmc_samples[, c("alpha[1]", "beta1[1]", "beta1[2]", "beta1[3]",
 # edd's modified 2 ----
 DDKdata <- read.csv("data/bda_data.csv")
 
-DDKdata <- DDKdata  |> 
+DDKdata <- DDKdata  %>%  
   arrange(sex, age, naam)
 
 datajags2 <- list(
@@ -779,6 +779,66 @@ for (i in 1:n_munic) {
   }
 }
 
+#########################=======Centred code
+sink("centred.txt")
+cat("
+model {
+# Priors
+  for (i in 1:n_munic){
+    eta[i] ~ dnorm(0, 1)
+    alpha[i] <- mu.int + sigma.int * eta[i]  # Centered intercept
+}
+  mu.int ~ dnorm(0, 0.001) # Hyperparameter for random intercepts
+  tau.int <- 1 / (sigma.int * sigma.int)
+  sigma.int ~ dunif(0, 10)
+  
+  for (j in 1:n_age) {
+    beta1[j] ~ dnorm(0, 0.001) # age effects
+  }
+  
+  for (k in 1:n_sex) {
+    gamma1[k] ~ dnorm(0, 0.001) # sex effects
+  }
+  
+  # Binomial likelihood
+  for (i in 1:n_munic) {        # Loop over municipalities
+    for (j in 1:n_age) {        # Loop over age groups
+      for (k in 1:n_sex) {      # Loop over genders
+  Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])
+  logit(pi[i,j,k]) <- alpha[n_munic_arr[i, j, k]] + beta1[j]*age1[i,j,k] + 
+  beta1[j]*age2[i,j,k] + beta1[j]*age3[i,j,k] + beta1[j]*age4[i,j,k] + 
+  gamma1[k]*male[i,j,k]
+      }
+    }
+  }
+}
+", fill = TRUE)
+sink()
 
 
+#######======
+# Initial values
+inits2 <- function() {
+  list(
+    alpha = rnorm(n_munic, 0, 2),
+    beta1 = rnorm(n_age, 1, 1),
+    gamma1 = rnorm(n_sex, 1, 1),
+    mu.int = rnorm(1, 0, 1)
+  )
+}
+
+params <- c("alpha", "beta1", "gamma1", "mu.int", "sigma.int", 'pi')
+
+## Run the model ----
+centred.fit <- jags(
+  data = datajags2,
+  inits = inits2,
+  parameters.to.save = params,
+  model.file = "centred.txt",
+  n.chains = 3,
+  n.iter = 10000,
+  n.burnin = 5000,
+  jags.seed = 123,
+  quiet = FALSE
+)
 
