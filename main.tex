@@ -3,7 +3,7 @@
 
 %%% Add packages here
 \usepackage{graphicx} 
-\usepackage{parskip}
+%\usepackage{parskip}
 \usepackage[table]{xcolor}
 \usepackage{amsmath}
 %\usepackage{float}
@@ -122,13 +122,13 @@ where $Y_{iag}$ is the number of participants amongst the $N_{iag}$ number of in
 
 \subsubsection{Model specification}
 
-The model assumes a conjugate non-informative Jeffreys prior (essentially a beta distribution with $\alpha$ = $\beta$ =1/2) for the participation rate $\pi_i$:
+The model assumes a conjugate non-informative Jeffreys prior (essentially a beta distribution with $\alpha$ = $\beta$ = $\frac{1}{2}$) for the participation rate $\pi_i$:
 
 \[
-    \pi_{i} \sim Beta(\alpha=1/2, \beta=1/2)
+    \pi_{i} \sim Beta(\alpha=\frac{1}{2}, \beta=\frac{1}{2})
 \]
 
-\noindent implying no strong prior beliefs about the participation rate for the $i$th municipality. Three chains with a size of 10,000 iterations and a burn-in of 5,000 iterations were used. The thinning rate was left to the default value of 5. The starting values for the $\pi$ parameter in the first, second and third chains were set at 0.1, 0.5 and 0.9 respectively repeated over the 300 municipalities. The parameter to be monitored was $\pi_i$ and deviance. 
+\noindent implying no strong prior beliefs about the participation rate for the $i$th municipality. Three chains with a size of 10,000 iterations and a burn-in of 5,000 iterations were used. The thinning rate was left to the default value of 5. The starting values for the $\pi$ parameter in the first, second and third chains were set at 0.1, 0.5 and 0.9 respectively repeated over the 300 municipalities. The parameter to be monitored was $\pi_i$ and deviance (automatically provided). 
 
 \subsubsection{Assessing convergence}
 
@@ -248,140 +248,151 @@ Various graphical and formal diagnostic checks were used to check for convergenc
 
 \subsubsection{What do you conclude from this model?}
 
-Convergence was good in this model as per the diagnostics tests and also with stationarity for all $\pi_i$ achieved almost instantly as indicated by the graphical tests. 
-The mean posterior participation rates are shown in table \ref{tab:params1} and \ref{tab:params2} (appendix). Generally, municipalities with a high observed participation rate also have a high posterior participation rate and vice versa. There is considerable variation in the posterior distributions of $\pi_i$ with the posterior mean participatio rates ranging from 0.156 to 0.628. The municipalities with the highest and lowest mean posterior participation rate are of Boechout (0.628, sd=0.012) and Drogenbos (0.156, sd=0.015). The majority of the municipalities, that is 171 ($\approx 60\%$) have a mean posterior participation rate of $\geq$ 0.5. Five (5) municipalities have a mean posterior participation rate of $<0.25$. Including Drogenbos, these are Kraainem, Linkebeek, Sint-Genesius-Rode and Wemmel.
+% Convergence was good in this model as per the diagnostics tests and also with stationarity for all $\pi_i$ achieved almost instantly as indicated by the graphical tests. 
+% The mean posterior participation rates are shown in table \ref{tab:params1} and \ref{tab:params2} (appendix). Generally, municipalities with a high observed participation rate also have a high posterior participation rate and vice versa. There is considerable variation in the posterior distributions of $\pi_i$ with the posterior mean participation rates ranging from 0.156 to 0.628. The municipalities with the highest and lowest mean posterior participation rate are of Boechout (0.628, sd=0.012) and Drogenbos (0.156, sd=0.015). The majority of the municipalities, that is 171 ($\approx 60\%$) have a mean posterior participation rate of $\geq$ 0.5. Five (5) municipalities have a mean posterior participation rate of $<0.25$. Including Drogenbos, these are Kraainem, Linkebeek, Sint-Genesius-Rode and Wemmel.
 
-Model 1 takes into account that participation rates differ across municipalities. This would suffice if there was need for targetted intervention by municipality. The model as specified however does not explicitly estimate the difference in participation rates for different ages and genders.
+Model 1 takes into account that participation rates differ across municipalities. This would suffice if there was need for targetted intervention at municipal level. The model as specified, however, does not explicitly estimate the difference in participation rates for age and gender by not accounting for associated cluster effects. 
 
-Overall, the model convergence was good based on diagnostic tests and with stationarity for all  $\pi_i$'s achieved almost immediately, as confirmed by graphical assessments.
-The mean posterior participation rates are presented in Tables \ref{tab:params1} and \ref{tab:params2} (Appendix). Generally, municipalities exhibiting high observed participation rates also demonstrate high posterior participation rates, and vice versa. The posterior distributions of $\pi_i$ show considerable variation, with mean posterior participation rates ranging from 0.156 to 0.628. Boechout has the highest mean posterior participation rate (0.628, SD = 0.012), while Drogenbos has the lowest (0.156, SD = 0.015). The majority of municipalities (171, approximately 60\%) have a mean posterior participation rate of 0.5 or greater. Five municipalities have a mean posterior participation rate below 0.25: Drogenbos, Kraainem, Linkebeek, Sint-Genesius-Rode, and Wemmel.
+Overall, the model demonstrated good convergence as indicated by graphical diagnostics, including traceplots, autocorrelation plots, and running mean plots, as well as formal diagnostic tests such as the Geweke diagnostic, Brooks-Gelman-Rubin (BGR) statistic, Heidelberger-Welch diagnostic, and Raftery-Lewis diagnostic.  Stationarity for all  $\pi_i$'s was achieved almost immediately, as confirmed by graphical assessments.
+
+The mean posterior participation rates are presented in Tables \ref{tab:params1} and \ref{tab:params2} (Appendix). We also notice that generally, municipalities exhibiting high observed participation rates also demonstrate high posterior participation rates, and vice versa. Since we used non-informative priors for the participation rate $\pi_i$, the posterior $\pi_i$'s are dominated by the data. 
+
+The overall trend highlights huge variation in the posterior participation rates across the regions. The posterior $\pi_i$ ranges from 0.156 to 0.628. Boechout has the highest mean posterior participation rate (0.628, SD = 0.012), while Drogenbos has the lowest (0.156, SD = 0.015). The majority of municipalities (171, approximately 60\%) have a mean posterior participation rate of 0.5 or greater. Careful review of this variation may offer actionable insights for targetted interventions. This may benefit regions with relatively low participation rates such Drogenbos, Kraainem, Linkebeek, Sint-Genesius-Rode, and Wemmel whose posterior mean participation rate falls below 0.25.
 
 
 \subsubsection{Present a caterpillar plot of the posterior participation rates.}
 
-The caterpillar plot of the posterior estimates $\Bar{\pi_i}$ with the respective 95\% equal-tail CIs are shown in figure \ref{fig:caterpillar1-120} and \ref{fig:caterpillar121-260}. Noticeably, municipality 103 (Herstappe) has a comparatively large interquartile range of the posterior mean indicating high uncertainty. This uncertainty reflects the municipality's fairly low number of participating (3) and invited (8) people. 
+As a sample, the caterpillar plot of the posterior estimates $\Bar{\pi_i}$ with the respective 95\% equal-tail credible interval for the first 20 municipalities ($\pi$[1-20]) are shown in figure \ref{fig:caterpillar1-20}. The points in the plot indicate the most likely participation rate ($\pi_i$) given the data and prior beliefs while the horizontal lines show the 95\% credible interval (CI) for $\pi_i$. The overlapping CIs, eg region 17,18 and 19 indicate that the posterior means are not clearly distinguishable given the data and prior information. The CIs for these regions don't overlap with that of region 20 suggesting that meaningful differences in the participation rate. We also noticed that the municipality of Herstappe (CI not shown) has a relatively large CI of the posterior mean $\pi$ indicating high uncertainty. This uncertainty perhaps reflects the municipality's fairly low number of participating (3) and invited (8) people. Note that we do not show the complete caterpillar plot as it was too cluttered due to many observations. 
 
-
-\begin{figure}[h!]
+\begin{figure}
     \centering
-    % First row
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/cater1-20.png}
-        \caption{pi[1:20]}
-        \label{fig:sub1_1}
-    \end{subfigure}
-    %\hfill
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/cater21-40.png}
-        \caption{pi[21:40]}
-        \label{fig:sub1_2}
-    \end{subfigure}
-
-    % Second row
-    \vskip\baselineskip
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/cater41-60.png}
-        \caption{pi[41:60]}
-        \label{fig:sub2_1}
-    \end{subfigure}
-    %\hfill
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/cater61-80.png}
-        \caption{pi[61:80]}
-        \label{fig:sub2_2}
-    \end{subfigure}
-
-    % third row
-    \vskip\baselineskip
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/cater81-100.png}
-        \caption{pi[81:100]}
-        \label{fig:sub1_1}
-    \end{subfigure}
-    %\hfill
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/cater101-120.png}
-        \caption{pi[101:120]}
-        \label{fig:sub1_2}
-    \end{subfigure}
-    
-    \caption{Posterior participation rates pi[1:120].}
-    \label{fig:caterpillar1-120}
+    \includegraphics[width=0.75\linewidth]{pictures/cater1-20.png}
+    \caption{Caterpillar plot for the first 20 municipalities.}
+    \label{fig:caterpillar1-20}
 \end{figure}
+\FloatBarrier
 
-\begin{figure}[h!]
-    \centering
-    % First row
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/cater121-140.png}
-        \caption{pi[121:140]}
-        \label{fig:sub2_1}
-    \end{subfigure}
-    %\hfill
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/cater141-160.png}
-        \caption{pi[141:160]}
-        \label{fig:sub2_2}
-    \end{subfigure}
+% \begin{figure}[h!]
+%     \centering
+%     % First row
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/cater1-20.png}
+%         \caption{pi[1:20]}
+%         \label{fig:sub1_1}
+%     \end{subfigure}
+%     %\hfill
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/cater21-40.png}
+%         \caption{pi[21:40]}
+%         \label{fig:sub1_2}
+%     \end{subfigure}
 
-    % second row
-    \vskip\baselineskip
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/cater161-180.png}
-        \caption{pi[161:180]}
-        \label{fig:sub1_1}
-    \end{subfigure}
-    %\hfill
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/cater181-200.png}
-        \caption{pi[181:200]}
-        \label{fig:sub1_2}
-    \end{subfigure}
+%     % Second row
+%     \vskip\baselineskip
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/cater41-60.png}
+%         \caption{pi[41:60]}
+%         \label{fig:sub2_1}
+%     \end{subfigure}
+%     %\hfill
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/cater61-80.png}
+%         \caption{pi[61:80]}
+%         \label{fig:sub2_2}
+%     \end{subfigure}
 
-    % third row
-    \vskip\baselineskip
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/cater201-220.png}
-        \caption{pi[201:220]}
-        \label{fig:sub2_1}
-    \end{subfigure}
-    %\hfill
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/cater221-240.png}
-        \caption{pi[221:240]}
-        \label{fig:sub2_2}
-    \end{subfigure}
+%     % third row
+%     \vskip\baselineskip
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/cater81-100.png}
+%         \caption{pi[81:100]}
+%         \label{fig:sub1_1}
+%     \end{subfigure}
+%     %\hfill
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/cater101-120.png}
+%         \caption{pi[101:120]}
+%         \label{fig:sub1_2}
+%     \end{subfigure}
+    
+%     \caption{Posterior participation rates pi[1:120].}
+%     \label{fig:caterpillar1-120}
+% \end{figure}
+
+% \begin{figure}[h!]
+%     \centering
+%     % First row
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/cater121-140.png}
+%         \caption{pi[121:140]}
+%         \label{fig:sub2_1}
+%     \end{subfigure}
+%     %\hfill
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/cater141-160.png}
+%         \caption{pi[141:160]}
+%         \label{fig:sub2_2}
+%     \end{subfigure}
+
+%     % second row
+%     \vskip\baselineskip
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/cater161-180.png}
+%         \caption{pi[161:180]}
+%         \label{fig:sub1_1}
+%     \end{subfigure}
+%     %\hfill
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/cater181-200.png}
+%         \caption{pi[181:200]}
+%         \label{fig:sub1_2}
+%     \end{subfigure}
+
+%     % third row
+%     \vskip\baselineskip
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/cater201-220.png}
+%         \caption{pi[201:220]}
+%         \label{fig:sub2_1}
+%     \end{subfigure}
+%     %\hfill
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/cater221-240.png}
+%         \caption{pi[221:240]}
+%         \label{fig:sub2_2}
+%     \end{subfigure}
 
     
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/cater241-260.png}
-        \caption{pi[241:260]}
-        \label{fig:sub2_1}
-    \end{subfigure}
-    %\hfill
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/cater261-280.png}
-        \caption{pi[261:280]}
-        \label{fig:sub2_2}
-    \end{subfigure}
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/cater241-260.png}
+%         \caption{pi[241:260]}
+%         \label{fig:sub2_1}
+%     \end{subfigure}
+%     %\hfill
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/cater261-280.png}
+%         \caption{pi[261:280]}
+%         \label{fig:sub2_2}
+%     \end{subfigure}
 
-    % third row
-    \vskip\baselineskip
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/cater281-300.png}
-        \caption{pi[281:300]}
-        \label{fig:sub2_2}
-    \end{subfigure}
+%     % third row
+%     \vskip\baselineskip
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/cater281-300.png}
+%         \caption{pi[281:300]}
+%         \label{fig:sub2_2}
+%     \end{subfigure}
     
-    \caption{Posterior participation rates pi[121:300].}
-    \label{fig:caterpillar121-260}
-\end{figure}
-\FloatBarrier % Ensures the figure doesn't float past this point
+%     \caption{Posterior participation rates pi[121:300].}
+%     \label{fig:caterpillar121-260}
+% \end{figure}
+
+%\FloatBarrier % Ensures the figure doesn't float past this point
 
 
-\subsubsection{For which regions is P ($\pi_i$ $<$ 0.30$|$Y ) $>$ 0.9?}
+\subsubsection{For which regions is $P$($\pi_i$ $<$ 0.30$|$Y ) $>$ 0.9?}
 
-These are Drogenbos ($P$=1.0000), Kraainem ($P$=1.000), Linkebeek ($P$=0.9957), Sint-Genesius-Rode ($P$=1.000), Wemmel ($P$=1.000) and Zaventem ($P$=0.9260).
+The probability $P$($\pi_i$ $<$ 0.30$|$Y ) is the posterior probability that the true participation rate $\pi_i$ for the $i$th region is less than 0.30 given the observed data $Y$. A high value of this probability as requested indicates strong evidence based on prior beliefs and data that the true parameter $\pi_i$ lies below 0.30. A number of regions meet this criteria and their posterior probabilities are indicated in brackets. These are Drogenbos ($P$=1.0000), Kraainem ($P$=1.0000), Linkebeek ($P$=0.9957), Sint-Genesius-Rode ($P$=1.000), Wemmel ($P$=1.000) and Zaventem ($P$=0.9260). For the regions Drogenbos, Kraainem, Sint-Genesius-Rode and Wemmel, there is absolute certainty that $\pi_i <$0.30.
 
 \newpage
 
@@ -401,16 +412,18 @@ while assuming that the participation rates are impacted by age and gender but a
     logit(\pi_{iag}) = \alpha + \beta a + \gamma g + b_i \qquad b_i \sim N(0, \sigma^2)
 \]
 
-\noindent where $\beta a$ is the effect of age modelled as dummies for the different age groups, $\gamma g$ is the gender effect and $\alpha$ is the intercept. All parameters given vague priors. The $\alpha$, $\beta$ and $\gamma$ parameters are given a normal prior. The $b_i$ parameter is given a normal prior with normal and uniform hyperpriors for the mean ($\mu$) and standard deviation ($\sigma$) for the random effects respectively. The initial values of $\alpha$, $\beta$, $\gamma$ and $\mu$ were randomly generated from a normal distribution. All these parameters, including $\pi_{iag}$ are monitored. Three Markov chains each with 10,000 iterations and a burn-in of 5,000 iterations were used. The thinning rate was left to the default value of 5. 
+\noindent where $\beta a$ is the effect of age modelled as dummies for the different age groups, $\gamma g$ is the gender effect and $\alpha$ is the intercept. 
+
+All parameters are given vague priors. The $\alpha$, $\beta$ and $\gamma$ parameters are given a normal prior. The $b_i$ parameter is given a normal prior with normal and uniform hyperpriors for the hyperparameters mean ($\mu$) and standard deviation ($\sigma$) respectively for the random effects. The initial values of $\alpha$, $\beta$, $\gamma$ and $\mu$ were randomly generated from a normal distribution. All these parameters, including $\pi_{iag}$ are monitored. Three Markov chains each with 10,000 iterations and a burn-in of 5,000 iterations were used. The thinning rate was left to the default value of 5. 
 
 
 \subsubsection{ Compare convergence for the hierarchically centered versus uncentered model.}
 
 %The MCerror was generally higher in the hierarchically centered model as compared to the uncentered model for the $\pi$ parameters. 
 
-Similar to the uncentered model, we also perform graphical approaches and formal diagnostics to assess convergence.  Due to the many $\pi_{iag}$ parameters, relevant plots are not shown for brevity. The results of the diagnostics are as follows:
+Graphical tests and formal diagnostics are used to assess convergence for the uncentered model.  Due to the many $\pi_{iag}$ parameters, relevant plots are not shown for brevity. The results of the diagnostics for the other parameters are as follows:
 
-\textbf{Trace plot}: The posterior distribution is rapidly explored by all chains for $\beta$, $\gamma$, $\sigma$, $\mu$ and $\pi_{iag}$. There are no gross deviations from stationarity. As a sample, the traceplots for $\beta$, $\gamma$, $\sigma$ and $\mu$ are shown in figure \ref{fig:traceplotsm2}.
+\textbf{Trace plot}: The posterior distribution is rapidly explored by all chains for $\beta$, $\gamma$, $\sigma$, $\mu$ and $\pi_{iag}$. There are no gross deviations from stationarity. As a sample, the traceplots for $\beta$, $\gamma$, $\sigma$ and $\alpha$ are shown in figure \ref{fig:traceplotsm2}.
 
 \begin{figure}[h!]
     \centering
@@ -441,11 +454,11 @@ Similar to the uncentered model, we also perform graphical approaches and formal
         %\label{fig:sub2_2}
     \end{subfigure}
     
-    \caption{traceplots for $\beta$, $\gamma$, $\sigma$ and $\mu$ }
+    \caption{traceplots for $\beta$, $\gamma$, $\sigma$ and $\alpha$ }
     \label{fig:traceplotsm2}
 \end{figure}
 
-\textbf{Autocorrelation plot}: The autocorrelation plots for $\beta$, $\gamma$, $\sigma$ and $\mu$ are shown in figure \ref{fig:autocorrM2}. There is good mixing rates for all parameters including $\pi_{iag}$.
+\textbf{Autocorrelation plot}: The autocorrelation plots for some parameters ($\beta$, $\gamma$, $\sigma$ and $\alpha$) are shown in figure \ref{fig:autocorrM2}. There is good mixing rates for all parameters including $\pi_{iag}$ (not shown).
 
 \begin{figure}[h!]
     \centering
@@ -476,7 +489,7 @@ Similar to the uncentered model, we also perform graphical approaches and formal
         %\label{fig:sub2_2}
     \end{subfigure}
     
-    \caption{Autocorrelation plots for $\beta$, $\gamma$, $\sigma$ and $\mu$}
+    \caption{Autocorrelation plots for $\beta$, $\gamma$, $\sigma$ and $\alpha$}
     \label{fig:autocorrM2}
 \end{figure}
 \FloatBarrier % Ensures the figure doesn't float past this point
@@ -517,7 +530,7 @@ Similar to the uncentered model, we also perform graphical approaches and formal
 \end{figure}
 \FloatBarrier % Ensures the figure doesn't float past this point
 
-\textbf{Geweke diagnostic}: With the dynamic version of the Geweke diagnostic, the Z-values for $\beta$, $\gamma$, $\sigma$, $\mu$ and $\pi_{iag}$ in all chains (except $\sigma$ in chain 1) fell inside the [-1.96, 1.96] interval indicating stationarity. The Geweke diagnostic plots are shown in figure \ref{fig:gewekem2}. 
+\textbf{Geweke diagnostic}: With the dynamic version of the Geweke diagnostic, the Z-values for $\beta$, $\gamma$, $\sigma$ (except in chain 1), $\alpha$ and $\pi_{iag}$ in all chains  fell inside the [-1.96, 1.96] interval indicating stationarity. Some of the Geweke diagnostic plots are shown in figure \ref{fig:gewekem2}. 
 
 \begin{figure}[h!]
     \centering
@@ -551,6 +564,7 @@ Similar to the uncentered model, we also perform graphical approaches and formal
     \caption{Geweke diagnostic for $\beta$, $\gamma$, $\sigma$ and $\mu$}
     \label{fig:gewekem2}
 \end{figure}
+\FloatBarrier
 
 \textbf{Brooks–Gelman–Rubin (BGR) diagnostic}: With the dynamic version of the GR interval diagnostics shown in figure \ref{fig:gewekem2}, the curves stabilized almost immediately for all parameters ($\beta$, $\gamma$, $\sigma$, $\mu$ and $\pi_{iag}$) and no additional iterations appeared necessary. Convergence was not rejected with the Gelman and Rubin's convergence diagnostic. The potential scale reduction factor (psrf), $\hat{R_c}$ = 1 for all these parameters. 
 
@@ -597,8 +611,8 @@ Similar to the uncentered model, we also perform graphical approaches and formal
 After convergence, the estimated values for $\alpha$ = 0.329. For the age group effects, $\beta_1, \beta_2, \beta_3, \beta_4$ and  $\beta_5$ were -0.567, -0.458, 0.156, 0.156 and 0.348 respectively. This implies that the age groups 50-54 and 55-59 have a negative effect on the participation rate while the rest age groups have a positive effect on the participation rate. The estimates for the gender effects, $\gamma_1$ and $\gamma_2$ were -0.150 and -0.214 for male and females respectively.   
 
 \subsubsection{For which regions and age-gender-groups is $P$ ($\pi_{iag}$ $<$ 0.30$|$Y ) $>$ 0.9?}
-
-The regions and age-gender groups with a posterior participation rate is less than 0.30 with a probability greater than 0.9 are shown in table \ref{tab:posterior_pi2}.
+Similarly as in model 1, we explore the posterior probability that the true participation rate $\pi_{iag}$ for the $i$th region, $a$th age and $g$th gender is less than 0.30 given the observed data $Y$ and prior information. A high value of this probability as requested indicates strong evidence based on prior beliefs and data that the true parameter $\pi_{iag}$ lies below 0.30. A number of regions meet this criteria and their posterior probabilities are shown in table  
+\ref{tab:posterior_pi2}. 
 
 
 \begin{table}[h!]
@@ -634,7 +648,7 @@ The regions and age-gender groups with a posterior participation rate is less th
         \begin{tablenotes}
           \centering
           \tiny
-          \item Note: gender (1:female, 2:male, age (1:50-54, 2:55-59, 3:60-64, 4:65-69, 5:70-74. Regions ()
+          \item Note: gender (1:female, 2:male, age (1:50-54, 2:55-59, 3:60-64, 4:65-69, 5:70-74. Regions (8-Antwerpen, )
         \end{tablenotes}
     \end{threeparttable}
 \end{table}
