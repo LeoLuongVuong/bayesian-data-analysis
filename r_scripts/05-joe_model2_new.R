@@ -754,31 +754,70 @@ samples <- coda.samples(model = jags2,
                           thin=5)
 
 
-# Example: Assuming `samples` contains posterior samples of `pi`
-posterior_pi <- as.matrix(samples[, grep("pi\\[", colnames(samples))])
+### ############## HIERARCHICAL CENTERING ----------------
 
-# Dimensions
-n_munic <- dim(datajags2$Niag)[1]
-n_age <- dim(datajags2$Niag)[2]
-n_sex <- dim(datajags2$Niag)[3]
-
-# Reshape into a 4D array
-n_iter <- nrow(posterior_pi)  # Number of MCMC iterations
-posterior_pi_array <- array(posterior_pi, dim = c(n_iter, n_munic, n_age, n_sex))
-
-
-# Predicted means array
-predicted_Y <- array(NA, dim = dim(datajags2$Yiag))
-
-# Loop through dimensions to compute means
-for (i in 1:n_munic) {
+sink("model22.txt")
+cat("
+model {
+# Priors
+  for (i in 1:n_munic){
+    alpha[i] ~ dnorm(0, 0.001) # fix intercept
+}
+  tau <- 1 / (sigma * sigma)
+  sigma ~ dunif(0, 10)
+  
   for (j in 1:n_age) {
-    for (k in 1:n_sex) {
-      predicted_Y[i, j, k] <- mean(posterior_pi_array[, i, j, k] * datajags2$Niag[i, j, k])
+    beta1[j] ~ dnorm(0, 0.001) # age effects
+  }
+  
+  for (k in 1:n_sex) {
+    gamma1[k] ~ dnorm(0, 0.001) # sex effects
+  }
+  
+  # Binomial likelihood
+  for (i in 1:n_munic) {        # Loop over municipalities
+    for (j in 1:n_age) {        # Loop over age groups
+      for (k in 1:n_sex) {      # Loop over genders
+  Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])
+  
+  m[i, j, k] <- alpha[n_munic_arr[i, j, k]] + beta1[j]*age1[i,j,k] + 
+  beta1[j]*age2[i,j,k] + beta1[j]*age3[i,j,k] + beta1[j]*age4[i,j,k] + 
+  gamma1[k]*male[i,j,k]
+
+  n[i, j, k] <- m[i, j, k] + alpha[n_munic_arr[i, j, k]]
+  
+  logit(pi[i,j,k]) <- n[i, j, k]
+
+  #n[i, j, k] ~ dnorm(m[i, j, k], tau)
+      }
     }
   }
 }
+", fill = TRUE)
+sink()
 
+inits2 <- function() {
+  list(
+    alpha = rnorm(n_munic, 0, 2),
+    beta1 = rnorm(n_age, 1, 1),
+    gamma1 = rnorm(n_sex, 1, 1),
+    mu.int = rnorm(1, 0, 1)
+  )
+}
 
+params <- c("alpha", "beta1", "gamma1", "mu.int", "sigma.int", 'pi')
+
+## Run the model ----
+mod22.fit <- jags(
+  data = datajags2,
+  inits = inits2,
+  parameters.to.save = params,
+  model.file = "model22.txt",
+  n.chains = 3,
+  n.iter = 10000,
+  n.burnin = 5000,
+  jags.seed = 123,
+  quiet = FALSE
+)
 
 
