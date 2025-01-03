@@ -38,7 +38,7 @@ which(is.na(bda_data_long))
 
 ###################################################################
 
-bda_data_long <- read.csv("bda_data.csv")
+bda_data_long <- read.csv("data/bda_data.csv")
 
 ### sort bda_data_long in the order of naam, age, sex
 bda_data_long <- bda_data_long %>%
@@ -109,6 +109,7 @@ mod.fit <- jags(
   quiet = FALSE
 )
 
+save(mod.fit, file = 'mod.fit')
 
 par("mar")
 par(mar=c(1,1,1,1))
@@ -116,9 +117,10 @@ par(mar=c(1,1,1,1))
 
 traceplot(mod.fit)
 
+sink("model1res1.txt")
 bayes1mcmc <- as.mcmc(mod.fit)
 summary(bayes1mcmc)
-
+sink()
 # model11.sim <- coda.samples(mod.fit, c('pi'), n.iter=10000)
 
 #############################################
