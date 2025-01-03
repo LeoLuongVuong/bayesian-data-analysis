@@ -737,7 +737,7 @@ load(file='mod.fit')
 compare(mod.fit, mod2.fit) # doesnt work
 
 
-### outliers detection -------------------------------------------------------
+####################### outliers detection -------------------------------------------------------
 # Load posterior samples from JAGS
 library(coda)
 
@@ -759,12 +759,13 @@ samples <- coda.samples(model = jags2,
 sink("model22.txt")
 cat("
 model {
-# Priors
-  for (i in 1:n_munic){
-    alpha[i] ~ dnorm(0, 0.001) # fix intercept
-}
-  tau <- 1 / (sigma * sigma)
-  sigma ~ dunif(0, 10)
+  # Priors
+    for (i in 1:n_munic){
+      alpha[i] ~ dnorm(mu.int, tau.int) # Intercepts
+  }
+    mu.int ~ dnorm(0, 0.001) # Hyperparameter for random intercepts
+    tau.int <- 1 / (sigma.int * sigma.int)
+    sigma.int ~ dunif(0, 10)
   
   for (j in 1:n_age) {
     beta1[j] ~ dnorm(0, 0.001) # age effects
@@ -778,17 +779,18 @@ model {
   for (i in 1:n_munic) {        # Loop over municipalities
     for (j in 1:n_age) {        # Loop over age groups
       for (k in 1:n_sex) {      # Loop over genders
-  Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])
-  
-  m[i, j, k] <- alpha[n_munic_arr[i, j, k]] + beta1[j]*age1[i,j,k] + 
-  beta1[j]*age2[i,j,k] + beta1[j]*age3[i,j,k] + beta1[j]*age4[i,j,k] + 
-  gamma1[k]*male[i,j,k]
-
-  n[i, j, k] <- m[i, j, k] + alpha[n_munic_arr[i, j, k]]
-  
-  logit(pi[i,j,k]) <- n[i, j, k]
-
-  #n[i, j, k] ~ dnorm(m[i, j, k], tau)
+      
+        Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])
+        
+        m[i, j, k] <- alpha[n_munic_arr[i, j, k]] + beta1[j]*age1[i,j,k] + 
+        beta1[j]*age2[i,j,k] + beta1[j]*age3[i,j,k] + beta1[j]*age4[i,j,k] + 
+        gamma1[k]*male[i,j,k]
+      
+        n[i, j, k] <- m[i, j, k] + alpha[n_munic_arr[i, j, k]]
+        
+        logit(pi[i,j,k]) <- n[i, j, k]
+      
+        #n[i, j, k] ~ dnorm(m[i, j, k], tau)
       }
     }
   }
@@ -805,7 +807,7 @@ inits2 <- function() {
   )
 }
 
-params <- c("alpha", "beta1", "gamma1", "mu.int", "sigma.int", 'pi')
+params <- c("alpha", "beta1", "gamma1", "mu.int", "sigma.int")
 
 ## Run the model ----
 mod22.fit <- jags(
@@ -820,4 +822,16 @@ mod22.fit <- jags(
   quiet = FALSE
 )
 
+options(max.print=999999)
+sink("model22info.txt")
+print(mod22.fit)
+sink()
+
+options(max.print=999999)
+sink("model22res.txt")
+bayes22mcmc <- as.mcmc(mod22.fit)
+summary(bayes22mcmc)
+sink()
+
+#----------------------------------------------
 
