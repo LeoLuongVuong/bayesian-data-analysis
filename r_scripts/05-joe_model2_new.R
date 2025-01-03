@@ -782,7 +782,7 @@ model {
       
         Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])
         
-        m[i, j, k] <- alpha[n_munic_arr[i, j, k]] + beta1[j]*age1[i,j,k] + 
+        m[i, j, k] <- beta1[j]*age1[i,j,k] + 
         beta1[j]*age2[i,j,k] + beta1[j]*age3[i,j,k] + beta1[j]*age4[i,j,k] + 
         gamma1[k]*male[i,j,k]
       
