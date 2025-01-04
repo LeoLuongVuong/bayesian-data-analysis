@@ -833,5 +833,119 @@ bayes22mcmc <- as.mcmc(mod22.fit)
 summary(bayes22mcmc)
 sink()
 
-#----------------------------------------------
+#-------------new model 2 ---------------------------------
+datajags23 <- list(
+  n_munic = length(unique(DDKdata$naam)),
+  #n_munic_arr = array(1:n_munic, dim = c(300, 5, 2)),
+  n_age = length(unique(DDKdata$age)),
+  n_sex = length(unique(DDKdata$sex)),
+  Niag = array(c(DDKdata$invited), dim = c(300, 5, 2)), 
+  Yiag = array(c(DDKdata$participant), dim = c(300, 5, 2)),
+  male = array(c(DDKdata$male), dim = c(300, 5, 2)),
+  age1 = array(c(DDKdata$age1), dim = c(300, 5, 2)),
+  age2 = array(c(DDKdata$age2), dim = c(300, 5, 2)),
+  age3 = array(c(DDKdata$age3), dim = c(300, 5, 2)),
+  age4 = array(c(DDKdata$age4), dim = c(300, 5, 2))
+)
+
+sink("model23.txt")
+cat("
+model {
+# Priors
+  alpha ~ dnorm(0, 0.01)   # Vague prior for intercept
+  
+  for (i in 1:n_munic){
+    b[i] ~ dnorm(mu, tau)   # Random intercepts
+  }
+  
+  mu ~ dnorm(0, 0.01)
+  tau <- 1 / (sigma * sigma)
+  sigma ~ dunif(0, 10)
+    
+  #tau ~ dgamma(1, 1)       # Adjusted gamma prior for stability
+  #sigma <- 1 / sqrt(tau)   # Standard deviation derived from tau
+  
+  for (j in 1:n_age) {
+    beta[j] ~ dnorm(0, 0.001) # Age effects
+  }
+  
+  for (k in 1:n_sex) {
+    gamma[k] ~ dnorm(0, 0.001) # Sex effects
+  }
+  
+  # Binomial likelihood
+  for (i in 1:n_munic) {        # Loop over municipalities
+    for (j in 1:n_age) {        # Loop over age groups
+      for (k in 1:n_sex) {      # Loop over genders
+        Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])
+        logit(pi[i,j,k]) <- alpha + beta[j]*age1[i,j,k] + 
+                          beta[j]*age2[i,j,k] + beta[j]*age3[i,j,k] +
+                          beta[j]*age4[i,j,k] + gamma[k]*male[i,j,k] + b[i]
+      }
+    }
+  }
+}
+", fill = TRUE)
+sink()
+
+
+# Initial values
+inits23 <- function() {
+  list(
+    alpha = rnorm(n_munic, 0, 2),
+    beta = rnorm(n_age, 1, 1),
+    gamma = rnorm(n_sex, 1, 1),
+    sigma = rnorm(1, 0, 1)
+  )
+}
+
+inits23 <- function() {
+  list(
+    alpha = rnorm(1, 0, 2),               # Single intercept parameter
+    beta = rnorm(n_age, 0, 1),           # Age effects (vector of size n_age)
+    gamma = rnorm(n_sex, 0, 1),          # Sex effects (vector of size n_sex)
+    b = rnorm(n_munic, 0, 1),            # Random intercepts for municipalities
+    tau = rgamma(1, 0.001, 0.001)        # Precision for random intercepts
+  )
+}
+
+
+params23 <- c("alpha", "beta", "gamma", "sigma")
+
+mod23.fit <- jags.model(file="model23.txt",
+                               data = datajags23,
+                               n.chains = 3,
+                        n.adapt=1000)
+update(mod23.fit,5000)
+model23.sim <- coda.samples(model = mod23.fit,
+                           variable.names = params23,
+                           n.iter=10000, 
+                           thin=1)
+
+sink("model23res.txt")
+summary(model23.sim)
+sink()
+
+rmeanplot(model23.sim)
+traceplot(model23.sim)
+par("mar")
+par(mar=c(1,1,1,1))
+geweke.plot(model23.sim)
+gelman.plot(model23.sim)
+heidel.diag(model23.sim)
+raftery.diag(model23.sim)
+
+## Run the model ----
+mod23.fit <- jags(
+  data = datajags23,
+  #inits = inits23,
+  parameters.to.save = params23,
+  model.file = "model23.txt",
+  n.chains = 3,
+  n.iter = 10000,
+  n.burnin = 5000,
+  jags.seed = 123,
+  quiet = FALSE
+)
+
 
