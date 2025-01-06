@@ -71,3 +71,48 @@ model {
 }
 ", fill = TRUE)
 sink()
+
+Compilation error on line 32.
+Attempt to redefine node n[1,1,1]
+THIS:: n[i, j, k] ~ dnorm(m[i, j, k], tau)
+
+## reformulated the model - review please
+sink("model23.txt")
+cat("
+model {
+# Priors
+  alpha ~ dnorm(0, 0.01)   # Vague prior for intercept
+  
+  for (i in 1:n_munic){
+    b[i] ~ dnorm(mu, tau)   # Random intercepts
+  }
+  
+  mu ~ dnorm(0, 0.01)
+  tau <- 1 / (sigma * sigma)
+  sigma ~ dunif(0, 10)
+    
+  #tau ~ dgamma(1, 1)       # Adjusted gamma prior for stability
+  #sigma <- 1 / sqrt(tau)   # Standard deviation derived from tau
+  
+  for (j in 1:n_age) {
+    beta[j] ~ dnorm(0, 0.001) # Age effects
+  }
+  
+  for (k in 1:n_sex) {
+    gamma[k] ~ dnorm(0, 0.001) # Sex effects
+  }
+  
+  # Binomial likelihood
+  for (i in 1:n_munic) {        # Loop over municipalities
+    for (j in 1:n_age) {        # Loop over age groups
+      for (k in 1:n_sex) {      # Loop over genders
+        Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])
+        logit(pi[i,j,k]) <- alpha + beta[j]*age1[i,j,k] + 
+                          beta[j]*age2[i,j,k] + beta[j]*age3[i,j,k] +
+                          beta[j]*age4[i,j,k] + gamma[k]*male[i,j,k] + b[i]
+      }
+    }
+  }
+}
+", fill = TRUE)
+sink()
