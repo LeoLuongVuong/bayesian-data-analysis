@@ -400,3 +400,38 @@ model1res <- read_excel("model1res.xlsx")
     filter(mean < 0.25) %>%
     #summarise(count = n()) %>%
     select(pi, mean))
+
+
+
+#######=========ppo and cpo
+#######
+samples <- as.matrix(as.mcmc.list(model.sim))
+Ppo <- array(NA, dim = dim(datajags$Yiag))
+Cpo <- array(NA, dim = dim(datajags$Yiag))
+
+for (i in 1:300) {
+  for (j in 1:5) {
+    for (k in 1:2) {
+      yobs <- datajags$Yiag[i, j, k]
+      nobs <- datajags$Niag[i, j, k]
+      
+      Ppo_p <- dbinom(yobs, size = nobs, prob = samples[, i])
+      Ppo[i, j, k] <- mean(Ppo_p)
+      
+      l_wgt <- 1 / dbinom(yobs, size = nobs, prob = samples[, i])
+      Cpo_p <- Ppo_p * l_wgt. ####not working as expected getting all 1's
+      Cpo[i, j, k] <- 1 / mean(Cpo_p, na.rm = TRUE)
+    }
+  }
+}
+
+
+hist(as.vector(Ppo), breaks = 30, main = "Distribution of PPO", xlab = "PPO")
+hist(as.vector(Cpo), breaks = 30, main = "Distribution of CPO", xlab = "CPO")
+
+  
+  
+  
+  
+  
+  
