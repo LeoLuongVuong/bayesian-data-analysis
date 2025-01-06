@@ -64,7 +64,7 @@ cat("
 # ...
 model {
   for (i in 1:n_munic) {        # Loop over municipalities
-    pi[i] ~ dbeta(0.5, 0.5)         # Prior for participation rate per municipality
+    pi[i] ~ dbeta(1.0, 1.0)         # Prior for participation rate per municipality
     
     for (j in 1:n_age) {        # Loop over age groups
       for (k in 1:n_sex) {      # Loop over genders
