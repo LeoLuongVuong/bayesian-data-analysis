@@ -6,6 +6,7 @@ library(readxl)
 library(pacman)
 library(MCMCvis)
 library(mcmcplots)
+library(rjags)
 
 
 # Leo's final ---------------------------------------
@@ -348,6 +349,151 @@ model {
 ", fill = TRUE)
 sink()
 
+## Hierarchical centering ----------------------------------------------
+
+DDKdata <- read.csv("data/bda_data.csv")
+
+DDKdata <- DDKdata  |> 
+  arrange(sex, age, naam)
+
+datajags2 <- list(
+  n_munic = length(unique(DDKdata$naam)),
+  n_munic_arr = array(1:n_munic, dim = c(300, 5, 2)),
+  n_age = length(unique(DDKdata$age)),
+  n_sex = length(unique(DDKdata$sex)),
+  Niag = array(c(DDKdata$invited), dim = c(300, 5, 2)), 
+  Yiag = array(c(DDKdata$participant), dim = c(300, 5, 2)),
+  male = array(c(DDKdata$male), dim = c(300, 5, 2)),
+  age1 = array(c(DDKdata$age1), dim = c(300, 5, 2)),
+  age2 = array(c(DDKdata$age2), dim = c(300, 5, 2)),
+  age3 = array(c(DDKdata$age3), dim = c(300, 5, 2)),
+  age4 = array(c(DDKdata$age4), dim = c(300, 5, 2)),
+  age5 = array(c(DDKdata$age5), dim = c(300, 5, 2)),
+  female = array(c(DDKdata$female), dim = c(300, 5, 2))
+)
+
+sink("model2.txt")
+cat("
+model {
+# Priors
+  mu ~ dnorm(0, 0.001) # overall mean
+  for (i in 1:n_munic){
+  b[i] ~ dnorm(0, tau)
+  }
+  tau <- 1 / (sigma * sigma)
+  sigma ~ dunif(0, 1)
+  
+  # for (i in 1:n_munic){
+  #   alpha[i] ~ dnorm(mu.int, tau.int) # Intercepts
+#}
+  # mu.int ~ dnorm(0, 0.001) # Hyperparameter for random intercepts
+  # tau.int <- 1 / (sigma.int * sigma.int)
+  # sigma.int ~ dunif(0, 10)
+  # 
+  # for (j in 1:n_age) {
+  #   beta1[j] ~ dnorm(0, 0.001) # age effects
+  # }
+  # 
+  # for (k in 1:n_sex) {
+  #   gamma1[k] ~ dnorm(0, 0.001) # sex effects
+  # }
+  
+  # Binomial likelihood
+  for (i in 1:n_munic) {        # Loop over municipalities
+  logit(pi[i]) <- mu + b[i]
+    for (j in 1:n_age) {        # Loop over age groups
+      for (k in 1:n_sex) {      # Loop over genders
+  Yiag[i,j,k] ~ dbin(pi[i], Niag[i,j,k])
+      }
+    }
+  }
+}
+", fill = TRUE)
+sink()
+
+sink("model2.txt")
+cat("
+model {
+# Priors
+  for (i in 1:n_munic){
+    # alpha[i] ~ dnorm(mu.int, tau.int) # Intercepts
+    b[i] ~ dnorm(mu.int, tau.int)
+}
+  mu.int ~ dnorm(0, 0.001) # Hyperparameter for random intercepts
+  tau.int <- 1 / (sigma.int * sigma.int)
+  sigma.int ~ dunif(0, 10)
+  
+  for (j in 1:n_age) {
+    beta1[j] ~ dnorm(0, 0.001) # age effects
+  }
+  
+  for (k in 1:n_sex) {
+    gamma1[k] ~ dnorm(0, 0.001) # sex effects
+  }
+  
+  # Binomial likelihood
+  for (i in 1:n_munic) {        # Loop over municipalities
+    for (j in 1:n_age) {        # Loop over age groups
+      for (k in 1:n_sex) {      # Loop over genders
+  Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])
+  
+  m[i, j, k] <- beta1[j]*age1[i,j,k] + 
+  beta1[j]*age2[i,j,k] + beta1[j]*age3[i,j,k] + beta1[j]*age4[i,j,k] + 
+  beta1[j]*age5[i,j,k] + gamma1[k]*male[i,j,k] + gamma1[k]*female[i,j,k]
+  
+  logit(pi[i,j,k]) <-  m[i, j, k] + b[n_munic_arr[i, j, k]]
+  }
+    }
+  }
+}
+", fill = TRUE)
+sink()
+
+# Initial values
+# inits2 <- function() {
+#   list(
+#     mu = rnorm(1, 0.5, 0.1),
+#     b = rnorm(n_munic, 0, 1),
+#     sigma = runif(1, 0, 1)
+#   )
+# }
+
+n_munic <- length(unique(DDKdata$naam))
+n_age <- length(unique(DDKdata$age))
+n_sex <- length(unique(DDKdata$sex))
+
+inits2 <- function() {
+  list(
+    b = rnorm(n_munic, 0, 2),
+    beta1 = rnorm(n_age, 1, 1),
+    gamma1 = rnorm(n_sex, 1, 1),
+    mu.int = rnorm(1, 0, 1)
+  )
+}
+
+# params <- c("mu", "b", "pi", "sigma")
+params <- c("beta1")
+
+## Run the model ----
+mod2.fit <- jags(
+  data = datajags2,
+  inits = inits2,
+  parameters.to.save = params,
+  model.file = "model2.txt",
+  n.chains = 3,
+  n.iter = 10000,
+  n.burnin = 5000,
+  jags.seed = 123,
+  quiet = FALSE
+)
+
+traceplot(mod2.fit)
+
+# print pD and DIC ---------------------------------------
+options(max.print=999999)
+sink("model2_result.txt")
+print(mod2.fit)
+sink()
 
 # Initial values
 inits23 <- function() {
