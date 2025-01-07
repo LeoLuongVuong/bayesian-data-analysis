@@ -106,21 +106,23 @@ Dr. Oswaldo Gressani \\
 
 \subsection{Model 1}
 
-\subsubsection{Assumed model}
+\subsubsection{Model specification}
 The number of participants in the screening program are modelled without covariates following the model formulation:
 
 \[
     Y_{iag} \sim Binom(\pi_{i}, N_{iag})
 \]
 
-where $Y_{iag}$ is the number of participants amongst the $N_{iag}$ number of invited individuals, in municipality $i$ of age $a$ and gender $g$. $\pi_{i}$ is the participation rate per municipality. This means that the number of participants $Y_{iag}$ follows a Binomial distribution dependent on:
+\noindent where $Y_{iag}$ is the number of participants amongst the $N_{iag}$ number of invited individuals, in municipality $i$ of age $a$ and gender $g$. $\pi_{i}$ is the participation rate per municipality. This means that the number of participants $Y_{iag}$ follows a Binomial distribution assuming the participation rate to be shared across all age and gender subgroups within a municipality.
 
-\begin{itemize}
-    \item the number of invited individuals for each municipality-age-gender combination
-    \item the participation rate per municipality. This participation rate is assumed to be averaged over the municipality regardless of the age or gender. 
-\end{itemize}
+% \begin{itemize}
+%     \item the number of invited individuals for each municipality-age-gender combination
+%     \item the participation rate per municipality. This participation rate is assumed to be averaged over the municipality regardless of the age or gender. 
+% \end{itemize}
 
-\subsubsection{Model specification}
+The bugs code models the number of participants ($Y_{iag}$) for observed combinations of municipalities, age groups, and sexes with a binomial distribution. The binomial distribution has as parameters, the probability of success $\pi_i$ (participation rate for the municipality) and the number of trials $N_{iag}$ (number of invited individuals). %Three for-loops are used to iterate over the municipality, age and gender dimensions.
+
+%\subsubsection{Model specification}
 
 % The model assumes a conjugate non-informative Jeffreys prior (essentially a beta distribution with $\alpha$ = $\beta$ = $\frac{1}{2}$) for the participation rate $\pi_i$:
 
@@ -128,124 +130,123 @@ where $Y_{iag}$ is the number of participants amongst the $N_{iag}$ number of in
 %     \pi_{i} \sim Beta(\alpha=\frac{1}{2}, \beta=\frac{1}{2})
 % \]
 
-The model assumes a conjugate beta prior for the participation rate $\pi_i$:
-
-\[
-    \pi_{i} \sim Beta(\alpha=1.0, \beta=1.0)
-\]
-
-\noindent implying no strong prior beliefs about the participation rate for the $i$th municipality. Three chains with a size of 10,000 iterations and a burn-in of 5,000 iterations were used. The thinning rate was left to the default value of 5. The starting values for the $\pi$ parameter in the first, second and third chains were set at 0.1, 0.5 and 0.9 respectively repeated over the 300 municipalities. The parameter to be monitored was $\pi_i$ and deviance (automatically provided). 
+The model assumes a conjugate beta prior for the participation rate $\pi_i$, that is $\pi_{i} \sim Beta(\alpha=1.0, \beta=1.0)$ implying no strong prior beliefs about the participation rate for the $i$th municipality. Three chains with a size of 10,000 iterations and a burn-in of 5,000 iterations were used. The thinning rate was left to the default value of 5. The starting values for the $\pi$ parameter in the first, second and third chains were set at 0.1, 0.5 and 0.9 respectively repeated over the 300 municipalities. The parameter to be monitored was $\pi_i$ and deviance (automatically provided).  
 
 \subsubsection{Assessing convergence}
 
-Various graphical and formal diagnostic checks were used to check for convergence of the Markov chains. These diagnostics and the findings are as follows:
+Various graphical and formal diagnostic checks were used to check for convergence of the Markov chains. These diagnostics and the findings are follow next. To keep the report concise, we do not present the plots for the tests. 
 
-\textbf{Trace plot}: The posterior distribution is rapidly explored by all chains for deviance and all $\pi_i$ in all chains. There are no gross deviations from stationarity. The sample traceplots are shown in figure \ref{fig:traceplotsm1}.
+\textbf{Trace plot}: The posterior distribution is rapidly explored by all chains for deviance and all $\pi_i$ in all chains. There are no gross deviations from stationarity. 
 
-\begin{figure}[h!]
-    \centering
-    % First row
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/traceplot1-3.png}
-        %\caption{pi[1:20]}
-        %\label{fig:sub1_1}
-    \end{subfigure}
-    %\hfill
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/traceplot4-6.png}
-        %\caption{pi[21:40]}
-        %\label{fig:sub1_2}
-    \end{subfigure}
+%The sample traceplots are shown in figure \ref{fig:traceplotsm1}.
+
+% \begin{figure}[h!]
+%     \centering
+%     % First row
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/traceplot1-3.png}
+%         %\caption{pi[1:20]}
+%         %\label{fig:sub1_1}
+%     \end{subfigure}
+%     %\hfill
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/traceplot4-6.png}
+%         %\caption{pi[21:40]}
+%         %\label{fig:sub1_2}
+%     \end{subfigure}
     
-    \caption{Sample traceplots for $\pi_i$}
-    \label{fig:traceplotsm1}
-\end{figure}
+%     \caption{Sample traceplots for $\pi_i$}
+%     \label{fig:traceplotsm1}
+% \end{figure}
 
-\textbf{Autocorrelation plot}: The autocorrelation plots (sample in figure \ref{fig:autocorrM1}) show good mixing rates for all $\pi_i$ and deviance.
+\textbf{Autocorrelation plot}: The autocorrelation plots show good mixing rates for all $\pi_i$ and deviance.
+% (sample in figure \ref{fig:autocorrM1}) 
 
-\begin{figure}[h!]
-    \centering
-    % First row
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth, height=8cm]{pictures/autocorr1.png}
-        %\caption{pi[1:20]}
-        %\label{fig:sub1_1}
-    \end{subfigure}
-    %\hfill
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth, height=8cm]{pictures/autocorr2.png}
-        %\caption{pi[21:40]}
-        %\label{fig:sub1_2}
-    \end{subfigure}
-    \caption{Sample autocorrelation plots for $\pi_i$}
-    \label{fig:autocorrM1}
-\end{figure}
-\FloatBarrier % Ensures the figure doesn't float past this point
+% \begin{figure}[h!]
+%     \centering
+%     % First row
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth, height=8cm]{pictures/autocorr1.png}
+%         %\caption{pi[1:20]}
+%         %\label{fig:sub1_1}
+%     \end{subfigure}
+%     %\hfill
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth, height=8cm]{pictures/autocorr2.png}
+%         %\caption{pi[21:40]}
+%         %\label{fig:sub1_2}
+%     \end{subfigure}
+%     \caption{Sample autocorrelation plots for $\pi_i$}
+%     \label{fig:autocorrM1}
+% \end{figure}
+% \FloatBarrier % Ensures the figure doesn't float past this point
 
-\textbf{Running-mean plots}: The running-mean plots (sample in figure \ref{fig:runningmeanM1}) show a stable behaviour for deviance all $\pi_i$ indicating stationarity.
+% \textbf{Running-mean plots}: The running-mean plots (sample in figure \ref{fig:runningmeanM1}) show a stable behaviour for deviance all $\pi_i$ indicating stationarity.
 
-\begin{figure}[h!]
-    \centering
-    % First row
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth, height=8cm]{pictures/rmean2.png}
-        %\caption{pi[1:20]}
-        %\label{fig:sub1_1}
-    \end{subfigure}
-    %\hfill
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth, height=8cm]{pictures/rmean3.png}
-        %\caption{pi[21:40]}
-        %\label{fig:sub1_2}
-    \end{subfigure}
+% \begin{figure}[h!]
+%     \centering
+%     % First row
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth, height=8cm]{pictures/rmean2.png}
+%         %\caption{pi[1:20]}
+%         %\label{fig:sub1_1}
+%     \end{subfigure}
+%     %\hfill
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth, height=8cm]{pictures/rmean3.png}
+%         %\caption{pi[21:40]}
+%         %\label{fig:sub1_2}
+%     \end{subfigure}
     
-    \caption{Sample running-mean plots for $\pi_i$}
-    \label{fig:runningmeanM1}
-\end{figure}
-\FloatBarrier % Ensures the figure doesn't float past this point
+%     \caption{Sample running-mean plots for $\pi_i$}
+%     \label{fig:runningmeanM1}
+% \end{figure}
+% \FloatBarrier % Ensures the figure doesn't float past this point
 
-\textbf{Geweke diagnostic}: With the dynamic version of the Geweke diagnostic, most of the Z-values for $\pi_i$ and all Z-values for deviance in all chains fell inside the [-1.96, 1.96] interval indicating stationarity. A sample of the Geweke diagnostic plots are shown in figure \ref{fig:gewekem1}. 
+\textbf{Geweke diagnostic}: With the dynamic version of the Geweke diagnostic, most of the Z-values for $\pi_i$ and all Z-values for deviance in all chains fell inside the [-1.96, 1.96] interval indicating stationarity. 
 
-\begin{figure}[h!]
-    \centering
-    % First row
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/geweke187-195.png}
-        %\caption{pi[1:20]}
-        %\label{fig:sub1_1}
-    \end{subfigure}
-    %\hfill
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/geweke292-300.png}
-        %\caption{pi[21:40]}
-        %\label{fig:sub1_2}
-    \end{subfigure}
+%A sample of the Geweke diagnostic plots are shown in figure \ref{fig:gewekem1}. 
+
+% \begin{figure}[h!]
+%     \centering
+%     % First row
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/geweke187-195.png}
+%         %\caption{pi[1:20]}
+%         %\label{fig:sub1_1}
+%     \end{subfigure}
+%     %\hfill
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/geweke292-300.png}
+%         %\caption{pi[21:40]}
+%         %\label{fig:sub1_2}
+%     \end{subfigure}
     
-    \caption{Sample Geweke diagnostic for $\pi_i$}
-    \label{fig:gewekem1}
-\end{figure}
+%     \caption{Sample Geweke diagnostic for $\pi_i$}
+%     \label{fig:gewekem1}
+% \end{figure}
 
-\textbf{Brooks–Gelman–Rubin (BGR) diagnostic}: With the dynamic version of the GR interval diagnostics, the curves stabilized almost immediately and no further iterations appeared necessary. For deviance and all $\pi_i$, the estimate of the potential scale reduction factor (psrf), $\hat{R_c}$ = 1 (with 97.5\% upper bound equal to 1). The multivariate psrf is 1.01.
+\textbf{Brooks–Gelman–Rubin (BGR) diagnostic}: With the BGR diagnostics, the curves stabilized almost immediately and no further iterations appeared necessary. For deviance and all $\pi_i$, the estimate of the potential scale reduction factor (psrf), $\hat{R_c}$ = 1 (with 97.5\% upper bound equal to 1). The multivariate psrf is 1.01.
 
-\begin{figure}[h!]
-    \centering
-    % First row
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth, height=8cm]{pictures/GRB1.png}
-        %\caption{pi[1:20]}
-        %\label{fig:sub1_1}
-    \end{subfigure}
-    %\hfill
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth, height=8cm]{pictures/GRB2.png}
-        %\caption{pi[21:40]}
-        %\label{fig:sub1_2}
-    \end{subfigure}
+% \begin{figure}[h!]
+%     \centering
+%     % First row
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth, height=8cm]{pictures/GRB1.png}
+%         %\caption{pi[1:20]}
+%         %\label{fig:sub1_1}
+%     \end{subfigure}
+%     %\hfill
+%     \begin{subfigure}{0.45\textwidth}
+%         \includegraphics[width=\linewidth, height=8cm]{pictures/GRB2.png}
+%         %\caption{pi[21:40]}
+%         %\label{fig:sub1_2}
+%     \end{subfigure}
     
-    \caption{Sample Gelman-Rubin-Brooks plots for $\pi_i$}
-    \label{fig:GRBm1}
-\end{figure}
-\FloatBarrier % Ensures the figure doesn't float past this point
+%     \caption{Sample Gelman-Rubin-Brooks plots for $\pi_i$}
+%     \label{fig:GRBm1}
+% \end{figure}
+% \FloatBarrier % Ensures the figure doesn't float past this point
 
 \textbf{Heidelberger–Welch (HW) diagnostic}: The Heidelberger–Welch tests, that is, stationarity test as well as the halfiwidth test were passed for almost all $\pi_i$ except a few in the first chain. Further iterations did not make any change.
 
@@ -418,30 +419,34 @@ while assuming that the participation rates are impacted by age and gender but a
     logit(\pi_{iag}) = \alpha + \beta a + \gamma g + b_i \qquad b_i \sim N(0, \sigma^2)
 \]
 
-\noindent where $\beta a$ is the effect of age modelled as dummies for the different age groups, $\gamma g$ is the gender effect and $\alpha$ is the intercept. 
+\noindent where $\beta a$ is the effect of age modelled as dummies for the different age groups, $\gamma g$ is the gender effect and $\alpha$ is the intercept. The random effects are centered around zero making the model hierarchically-uncentered.
 
-All parameters are given vague priors. The $\alpha$, $\beta$ and $\gamma$ parameters are given a normal prior. The $b_i$ parameter is given a normal prior with normal and uniform hyperpriors for the hyperparameters mean ($\mu$) and standard deviation ($\sigma$) respectively for the random effects. The initial values of $\alpha$, $\beta$, $\gamma$ and $\mu$ were randomly generated from a normal distribution. All these parameters, including $\pi_{iag}$ are monitored. Three Markov chains each with 10,000 iterations and a burn-in of 5,000 iterations were used. The thinning rate was left to the default value of 5. 
+All parameters are given vague priors. The $\alpha$, $\beta$ and $\gamma$ parameters are given a normal prior ($\sim N(0, 10^{-3})$. The random effects parameter $b_i$ parameter is given a normal prior $b_i \sim N(0, \sigma^2)$ where $\sigma \sim U(0, 10)$.  %is computed  with a uniform hyperprior for the hyperparameters mean ($\mu$) and standard deviation ($\sigma$) respectively for the random effects. 
+
+In the hierarchically-centered model, rather than being centering around zero, the random effects are $b_i \sim N(\mu, \sigma^2$). This model uses the same prior for $\alpha$, $\beta$ and $\gamma$ parameters and the variance parameter is given a gamma hyperprior ($\sigma^2$ $\sim$ Gamma(0.001, 0.001)).
+
+The initial values of $\alpha$, $\beta$, $\gamma$ and $\mu$ were randomly generated from a normal distribution. All these parameters, including $\pi_{iag}$ are monitored. Three Markov chains each with 10,000 iterations and a burn-in of 5,000 iterations were used. The thinning rate was left to the default value of 5. 
 
 
 \subsubsection{ Compare convergence for the hierarchically centered versus uncentered model.}
 
 %The MCerror was generally higher in the hierarchically centered model as compared to the uncentered model for the $\pi$ parameters. 
 
-Graphical tests and formal diagnostics are used to assess convergence for the uncentered model.  Due to the many $\pi_{iag}$ parameters, relevant plots are not shown for brevity. The results of the diagnostics for the other parameters are as follows:
+Graphical tests and formal diagnostics are used to assess convergence for the hierarchically versus uncentered model.  Due to the many parameters including $\pi_{iag}$ parameters, relevant plots are not shown for brevity. We showcase the convergence checks with $\alpha$ and $\sigma^2$. The results of the diagnostics for the other parameters are as follows:
 
-\textbf{Trace plot}: The posterior distribution is rapidly explored by all chains for $\beta$, $\gamma$, $\sigma$, $\mu$ and $\pi_{iag}$. There are no gross deviations from stationarity. As a sample, the traceplots for $\beta$, $\gamma$, $\sigma$ and $\alpha$ are shown in figure \ref{fig:traceplotsm2}.
+\textbf{Trace plot}: The posterior distribution is rapidly explored by all chains for all parameters in the centered model. This signals better convergence for the centered model as compared to the uncentered version.  As a sample, the traceplots for $\beta$ and $\sigma^2$ are shown in figure \ref{fig:traceplotsm2}.
 
 \begin{figure}[h!]
     \centering
     % First row
     \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/mod2/mod2trace_beta.png}
+        \includegraphics[width=\linewidth]{pictures/centered/centtracealpha.png}
         %\caption{pi[1:20]}
         %\label{fig:sub1_1}
     \end{subfigure}
     %\hfill
     \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/mod2/mod2trace_gamma.png}
+        \includegraphics[width=\linewidth]{pictures/mod2/mod2trace_muint.png}
         %\caption{pi[21:40]}
         %\label{fig:sub1_2}
     \end{subfigure}
@@ -449,28 +454,28 @@ Graphical tests and formal diagnostics are used to assess convergence for the un
     % Second row
     \vskip\baselineskip
     \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/mod2/mod2trace_sigmaint.png}
+        \includegraphics[width=\linewidth]{pictures/centered/centtracetau.png}
         %\caption{pi[41:60]}
         %\label{fig:sub2_1}
     \end{subfigure}
     %\hfill
     \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/mod2/mod2trace_muint.png}
+        \includegraphics[width=\linewidth]{pictures/mod2/mod2trace_sigmaint.png}
         %\caption{pi[61:80]}
         %\label{fig:sub2_2}
     \end{subfigure}
     
-    \caption{traceplots for $\beta$, $\gamma$, $\sigma$ and $\alpha$ }
+    \caption{traceplots for some parameters ($\alpha$ and $\sigma^2$) - centered (left), uncentered(right)}
     \label{fig:traceplotsm2}
 \end{figure}
 
-\textbf{Autocorrelation plot}: The autocorrelation plots for some parameters ($\beta$, $\gamma$, $\sigma$ and $\alpha$) are shown in figure \ref{fig:autocorrM2}. There is good mixing rates for all parameters including $\pi_{iag}$ (not shown).
+\textbf{Autocorrelation plot}: The autocorrelation plots show good mixing rates in the centered model as compared to the uncentered model. Indicate plots for some parameters ($\alpha$ and $\sigma^2$) are shown in figure \ref{fig:autocorrM2}. 
 
 \begin{figure}[h!]
     \centering
     % First row
     \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/mod2/mod2autocorr_muint.png}
+        \includegraphics[width=\linewidth]{pictures/centered/centautocoralpha.png}
         %\caption{pi[1:20]}
         %\label{fig:sub1_1}
     \end{subfigure}
@@ -484,7 +489,7 @@ Graphical tests and formal diagnostics are used to assess convergence for the un
     % Second row
     \vskip\baselineskip
     \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/mod2/mod2autocorr_beta.png}
+        \includegraphics[width=\linewidth]{pictures/centered/centautocortau.png}
         %\caption{pi[41:60]}
         %\label{fig:sub2_1}
     \end{subfigure}
@@ -495,24 +500,24 @@ Graphical tests and formal diagnostics are used to assess convergence for the un
         %\label{fig:sub2_2}
     \end{subfigure}
     
-    \caption{Autocorrelation plots for $\beta$, $\gamma$, $\sigma$ and $\alpha$}
+    \caption{Autocorrelation plots for some parameters ($\alpha$ and $\sigma^2$) - centered (left), uncentered(right)}
     \label{fig:autocorrM2}
 \end{figure}
 \FloatBarrier % Ensures the figure doesn't float past this point
 
-\textbf{Running-mean plots}: The running-mean plots (sample in figure \ref{fig:runningmeanM2}) show a stable behaviour for $\beta$, $\gamma$, $\sigma$, $\mu$ and $\pi_{iag}$ indicating stationarity.
+\textbf{Running-mean plots}: The running-mean plots (sample in figure \ref{fig:runningmeanM2}) show a more stable behaviour for the parameters in the centered model as compared to the uncentered version. 
 
 \begin{figure}[h!]
     \centering
     % First row
     \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/mod2/mod2rmean_muint.png}
+        \includegraphics[width=\linewidth]{pictures/centered/centrmeanalpha.png}
         %\caption{pi[1:20]}
         %\label{fig:sub1_1}
     \end{subfigure}
     %\hfill
     \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/mod2/mod2rmean_sigmaint.png}
+        \includegraphics[width=\linewidth]{pictures/mod2/mod2rmean_muint.png}
         %\caption{pi[21:40]}
         %\label{fig:sub1_2}
     \end{subfigure}
@@ -520,35 +525,36 @@ Graphical tests and formal diagnostics are used to assess convergence for the un
     % Second row
     \vskip\baselineskip
     \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/mod2/mod2rmean_gamma.png}
+        \includegraphics[width=\linewidth]{pictures/centered/centrmeantau.png}
         %\caption{pi[41:60]}
         %\label{fig:sub2_1}
     \end{subfigure}
     %\hfill
     \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/mod2/mod2rmean_beta.png}
+        \includegraphics[width=\linewidth]{pictures/mod2/mod2rmean_sigmaint.png}
         %\caption{pi[61:80]}
         %\label{fig:sub2_2}
     \end{subfigure}
     
-    \caption{Sample running-mean plots for $\beta$, $\gamma$, $\sigma$ and $\mu$}
+    \caption{Sample running-mean plots for some parameters ($\alpha$ and $\sigma^2$) - centered (left), uncentered(right) }
     \label{fig:runningmeanM2}
 \end{figure}
 \FloatBarrier % Ensures the figure doesn't float past this point
 
-\textbf{Geweke diagnostic}: With the dynamic version of the Geweke diagnostic, the Z-values for $\beta$, $\gamma$, $\sigma$ (except in chain 1), $\alpha$ and $\pi_{iag}$ in all chains  fell inside the [-1.96, 1.96] interval indicating stationarity. Some of the Geweke diagnostic plots are shown in figure \ref{fig:gewekem2}. 
+\textbf{Geweke diagnostic}: The Geweke diagnostic indicates slightly better convergence for the centered model. Most the Z-values values for the centered model in contrast to the uncentered fall inside the [-1.96, 1.96] interval indicating stationarity. Indicative sample plots are shown in figure \ref{fig:gewekem2}. 
+
 
 \begin{figure}[h!]
     \centering
     % First row
     \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/mod2/mod2geweke_beta.png}
+        \includegraphics[width=\linewidth]{pictures/centered/centgewkalpha.png}
         %\caption{pi[1:20]}
         %\label{fig:sub1_1}
     \end{subfigure}
     %\hfill
     \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/mod2/mod2geweke_gamma.png}
+        \includegraphics[width=\linewidth]{pictures/mod2/mod2geweke_muint.png}
         %\caption{pi[21:40]}
         %\label{fig:sub1_2}
     \end{subfigure}
@@ -556,7 +562,7 @@ Graphical tests and formal diagnostics are used to assess convergence for the un
     % Second row
     \vskip\baselineskip
     \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/mod2/mod2geweke_muint.png}
+        \includegraphics[width=\linewidth]{pictures/centered/centgewktau.png}
         %\caption{pi[41:60]}
         %\label{fig:sub2_1}
     \end{subfigure}
@@ -567,24 +573,24 @@ Graphical tests and formal diagnostics are used to assess convergence for the un
         %\label{fig:sub2_2}
     \end{subfigure}
     
-    \caption{Geweke diagnostic for $\beta$, $\gamma$, $\sigma$ and $\mu$}
+    \caption{Geweke diagnostic for some parameters ($\alpha$ and $\sigma^2$) - centered (left), uncentered(right) }
     \label{fig:gewekem2}
 \end{figure}
 \FloatBarrier
 
-\textbf{Brooks–Gelman–Rubin (BGR) diagnostic}: With the dynamic version of the GR interval diagnostics shown in figure \ref{fig:gewekem2}, the curves stabilized almost immediately for all parameters ($\beta$, $\gamma$, $\sigma$, $\mu$ and $\pi_{iag}$) and no additional iterations appeared necessary. Convergence was not rejected with the Gelman and Rubin's convergence diagnostic. The potential scale reduction factor (psrf), $\hat{R_c}$ = 1 for all these parameters. 
+\textbf{Brooks–Gelman–Rubin (BGR) diagnostic}: Convergence was not rejected with the Gelman and Rubin's convergence diagnostic for either models. The potential scale reduction factor (psrf), $\hat{R_c}$ equals 1 for all the parameters with a multivariate psrf of 1 in the two models. The related diagnostic plots reiterate the almost instant stabilization of the curves for all parameters (sample shown in figure \ref{fig:GRBm2}). 
 
 \begin{figure}[h!]
     \centering
     % First row
     \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/mod2/mod2gbr_muint.png}
+        \includegraphics[width=\linewidth]{pictures/centered/centgbralpha.png}
         %\caption{pi[1:20]}
         %\label{fig:sub1_1}
     \end{subfigure}
     %\hfill
     \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/mod2/mod2gbr_sigmaint.png}
+        \includegraphics[width=\linewidth]{pictures/mod2/mod2gbr_muint.png}
         %\caption{pi[21:40]}
         %\label{fig:sub1_2}
     \end{subfigure}
@@ -592,32 +598,71 @@ Graphical tests and formal diagnostics are used to assess convergence for the un
     % Second row
     \vskip\baselineskip
     \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/mod2/mod2gbr_gamma.png}
+        \includegraphics[width=\linewidth]{pictures/centered/centgbraltau.png}
         %\caption{pi[41:60]}
         %\label{fig:sub2_1}
     \end{subfigure}
     %\hfill
     \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\linewidth]{pictures/mod2/mod2gbr_beta.png}
+        \includegraphics[width=\linewidth]{pictures/mod2/mod2gbr_sigmaint.png}
         %\caption{pi[61:80]}
         %\label{fig:sub2_2}
     \end{subfigure}
     
-    \caption{Sample Gelman-Rubin-Brooks plots for $\beta$, $\gamma$, $\sigma$ and $\mu$}
+    \caption{Sample Gelman-Rubin-Brooks plots for some parameters ($\alpha$ and $\sigma^2$) - centered (left), uncentered(right)}
     \label{fig:GRBm2}
 \end{figure}
 \FloatBarrier % Ensures the figure doesn't float past this point
 
-\textbf{Heidelberger–Welch (HW) diagnostic}: The Heidelberger–Welch tests, that is, stationarity test as well as the halfiwidth test were passed for $\beta$, $\gamma$, $\sigma$ and $\mu$ parameters and almost all $\pi_{iag}$ except a few. Further iterations did not make any change on the $\pi_{iag}$ with failed tests.
+\textbf{Heidelberger–Welch (HW) diagnostic}: The Heidelberger–Welch tests, that is, the stationarity test as well as the halfwidth test were passed for all parameters in both centered and uncentered models. 
 
-\textbf{Raftery–Lewis (RL) diagnostic}: The dependence factor for all parameters was below 2 an indicator for independent sampling therefore signalling good convergence.
+\textbf{Raftery–Lewis (RL) diagnostic}: With the  Raftery-Lewis diagnostic, the dependence factor for all parameters in the centered model was close 1 an indicator for independent sampling therefore signalling good convergence. The diagnostic indicated than the sample size should be increased (to 60,000) to achieve good convergence. 
+
+\textbf{Effective sample size}: For the centered model, all parameters have a high effective sample size (ESS) significantly greater than 1000 indicating good convergence of the MCMC chains. Some parameters ($\beta_1$ and $beta_2$) in the uncentered model have an ESS less than 1000 indicating slow mixing and a lack of convergence. This may affect uncertainty of the posterior summaries. 
+
+
+In conclusion, we observe better convergence in the hierarchically-centered model as compared to the uncentered version for all parameters with both  graphical and formal tests. Centering around zero deteriorates the rate of mixing. %This suggests the presence of strong evidence for the group-level participation rates in the data.
+
+\subsubsection{Investigate the amount of shrinkage.}
+
+For the uncentered model, we calculated shrinkage as follows: 
+$$1 - \frac{\text{sd}(\pi_i)}{\sigma}$$
+where $\mathrm{sd}(\pi_i)$ is the standard deviation (sd) calculated from all the model-estimated $\pi_{iag}, \quad i = 1, \dots, 300, \quad a = 1, \dots, 5, \quad g = 1, \dots, 2$, and  $\sigma$ is the estimated sd of the random intercept in the model. $\sigma$ is also the model prediced sd. 
+
+
+
+
+
+
 
 \subsubsection{What do you conclude from this model?}
 
-After convergence, the estimated values for $\alpha$ = 0.329. For the age group effects, $\beta_1, \beta_2, \beta_3, \beta_4$ and  $\beta_5$ were -0.567, -0.458, 0.156, 0.156 and 0.348 respectively. This implies that the age groups 50-54 and 55-59 have a negative effect on the participation rate while the rest age groups have a positive effect on the participation rate. The estimates for the gender effects, $\gamma_1$ and $\gamma_2$ were -0.150 and -0.214 for male and females respectively.   
+After convergence, the posterior mean of the intercept, $\alpha$ is equal to 0.328 with posterior SD=0.018. The posterior mean of the age effects for the first four age-groups referenced to the fifth age-group, $\beta_1, \beta_2, \beta_3$ and $\beta_4$ are -0.567(SD=0.008 ), -0.455(SD=0.008), 0.156(SD=0.009), and 0.157(SD=0.009) respectively. This implies that the age groups 50-54 and 55-59 have a negative effect on the participation rate while the rest age groups have a positive effect on the participation rate. This suggests that participation rate increases with age and that the younger population has on average a lower participation rate. The posterior mean for the gender effects, $\gamma_2$ were -0.214(SD=0.005) for males. This means a reduced participation rate for males as compared to females.   
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lcccccccc}
+\hline
+Parameter   & \text{mean} & \text{SD} & MCerr & 2.5\%  & 97.5\% & Rhat  & n.eff \\ 
+\hline
+$\alpha$  &  0.328 & 0.018  & 3.929e-04 & 0.292 &  0.364 & 1.002 & 1400 \\
+$\beta[1]$  & -0.567 & 0.008  & 2.713e-04 & -0.582 & -0.552 & 1.002 & 1500 \\ 
+$\beta[2]$  & -0.455 & 0.008  & 2.752e-04 & -0.471 & -0.439 & 1.001 & 2500 \\ 
+$\beta[3]$  &  0.156 & 0.009  & 2.747e-04 &  0.140 &  0.173 & 1.003 &  940 \\ 
+$\beta[4]$  &  0.157 & 0.009  & 2.721e-04 & 0.138 &  0.174 & 1.002 & 1500 \\ 
+%$\beta[5]$  & -1.284 & 32.032 & -65.682 & 59.737 & 1.001 & 3000 \\ 
+%$\gamma[1]$ & -0.395 & 31.985 & -62.525 & 61.812 & 1.001 & 2300 \\ 
+$\gamma[2]$ & -0.214 & 0.005  & 9.648e-05 & -0.224 & -0.205 & 1.001 & 3000 \\  
+%$\sigma_\text{int}$ &  0.284 & 0.013  &  0.261 &  0.311 & 1.001 & 3000 \\ 
+\hline
+\end{tabular}
+\caption{Posterior inference for model 2 (uncentered).}
+\label{tab:parameter_summary_reduced}
+\end{table}
+\FloatBarrier
 
 \subsubsection{For which regions and age-gender-groups is $P$ ($\pi_{iag}$ $<$ 0.30$|$Y ) $>$ 0.9?}
-Similarly as in model 1, we explore the posterior probability that the true participation rate $\pi_{iag}$ for the $i$th region, $a$th age and $g$th gender is less than 0.30 given the observed data $Y$ and prior information. A high value of this probability as requested indicates strong evidence based on prior beliefs and data that the true parameter $\pi_{iag}$ lies below 0.30. A number of regions meet this criteria and their posterior probabilities are shown in table  
+Similarly as in model 1, we explore the posterior probability that the true participation rate $\pi_{iag}$ for the $i$th region, $a$th age and $g$th gender is less than 0.30 given the observed data $Y$ and prior information. A high value of this probability as requested indicates strong evidence based on prior beliefs and data that the true parameter $\pi_{iag}$ lies below 0.30. A number of regions and age-gender groups meet this criteria and their posterior probabilities are shown in table  
 \ref{tab:posterior_pi2}. 
 
 
@@ -654,7 +699,8 @@ Similarly as in model 1, we explore the posterior probability that the true part
         \begin{tablenotes}
           \centering
           \tiny
-          \item Note: gender (1:female, 2:male, age (1:50-54, 2:55-59, 3:60-64, 4:65-69, 5:70-74. Regions (8-Antwerpen, )
+          \item Note: gender (1:female, 2:male), age (1:50-54, 2:55-59, 3:60-64, 4:65-69, 5:70-74). 
+          \item  Regions (8-Antwerpen, 13-Asse, 20-Beersel, 50-De Panne, 62-Dilbeek, 64-Drogenbos, 82-Grimbergen, 87-Halle, 108-Hoeilaart, 142-Kraainem, 164-Linkebeek, 177-Machelen, 212-Overijse, 226-Ronse, 235-Sint-Genesius-Rode, 242-Sint-Pieters-Leeuw, 261-Vilvoorde, 270-Wemmel, 275-Wezembeek-Oppem, 285-Zaventem)
         \end{tablenotes}
     \end{threeparttable}
 \end{table}
@@ -722,13 +768,17 @@ Similarly as in model 1, we explore the posterior probability that the true part
 % \end{table}
 
 
-\subsection{3. Which of the above models is better? Do a model comparison using information criteria. Investigate whether there are any outlying observations (based on the selected model).}
+\subsection{Which of the above models is better? Do a model comparison using information criteria. Investigate whether there are any outlying observations (based on the selected model).}
 
-We use the Deviance Information Criterion (DIC) which is an extension of Akaike Information Criterion (AIC) in a bayesian context to compare the two models. The uncentered model (model 1) has DIC = 40949.1 and Bayesian measure of complexity $pD$=302.9. The hierarchical model (model 2) has $pD$=315.7 and DIC=20952.0. As expected, $pD$ is higher for the more complex hierarchical model as compared to model 1. With a substantively lower value of DIC, we conclude that the hierarchical model is a substantially better fit for the data. 
+We use effective number of parameters (pD) and the Deviance Information Criterion (DIC) to compare the two models. pD is computed as the difference between the posterior mean of the deviance and the deviance evaluated at the posterior mean of the parameters. It is essentially a measure of model complexity. DIC is defined as the sum of the posterior mean of the deviance and pD. Both pD and DIC are used to assess model fit and complexity. The aim is to get a good balance between goodness-of-fit and parsimony. 
+Model 1 has pD = 300.5 and DIC = 40947.8, the hierarchically uncentered version of model 2 has pD =294.3 and DIC=20930.4 while the hierarchically centered version of model 2 has pD=2231.0 and DIC=21894.4. As expected, $pD$ is higher for the more complex hierarchically-centered model 2 as compared to the hierarchically-uncentered version and model 1. The hierarchical centering means that there is a stronger influence of data on the parameters. The hierarchically uncentered model 2 has a substantively lower value of DIC as compared to the other two models (the difference is greater than the recommended threshold of 10). We conclude that the hierarchically uncentered model is the best model offering a balance between parsimony and goodness of fit.  
 
-centered: $pD$ = 302.5 and DIC = 22651.9 \\
-uncentered: $pD$=315.7 and DIC=20952.0 \\
-model 1: $pD$=302.9 and DIC = 40949.1
+% % centered: $pD$ = 2974.8 and DIC = 22651.9 \\
+% pD = 2231.0 and DIC = 21894.4
+% % uncentered: $pD$=315.7 and DIC=20952.0 \\
+% pD = 294.3 and DIC = 20930.4
+% % model 1: $pD$=302.9 and DIC = 40949.1
+% pD = 300.5 and DIC = 40947.8
 
 
 
@@ -891,23 +941,37 @@ gibbs_sampler <- function(N = 50000, burnin = 20000, my_seed = 2025,
 
 \end{lstlisting}
 
-Gibbs sampling was performed for 50000 iterations  as shown  in the r-code above. The initial values for $\theta_1 \& \theta_2$ were set to 0.001. The first 20,000 samples were discarded as burn-in and the resulting chain analysed using histograms, trace plots, and summary statistics, including means, medians, 95\% HDP intervals, and 95\% equal-tail credible intervals as shown in Figure \ref{fig:gs-histogram} , Figure \ref{fig:gs-traceplot} and Table \ref{tab:summary_gs} respectively.
+Gibbs sampling was performed for 50000 iterations  as shown  in the r-code above. The initial values for $\theta_1 \& \theta_2$ were set to 0.001. The first 20,000 samples were discarded as burn-in and the resulting chain analysed using histograms, trace plots, and summary statistics, including means, medians, 95\% HDP intervals, and 95\% equal-tail credible intervals as shown in Figure \ref{fig:gs-histogram} , Figure \ref{fig:gs-traceplot}, Figure \ref{fig:gs-runmean}, Figure \ref{fig:gs-qqplot} and Table \ref{tab:summary_gs} respectively and showed general good convergence.
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=0.6\linewidth]{pictures/fig02-gs-histogram.png}
+    \includegraphics[width=0.8\linewidth]{pictures/fig02-gs-histogram.png}
     \caption{Sampling Histograms for $\theta_1$ and $\theta_2$ }
     \label{fig:gs-histogram}
 \end{figure}
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=0.6\linewidth]{pictures/fig01-gs-traceplot.png}
+    \includegraphics[width=0.8\linewidth]{pictures/fig01-gs-traceplot.png}
     \caption{Trace plots of $\theta_1$ and $\theta_2$ chains }
     \label{fig:gs-traceplot}
 \end{figure}
 
 
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{pictures/fig03-gs-qqplots.png}
+    \caption{QQ plots of $\theta_1$ and $\theta_2$ }
+    \label{fig:gs-qqplot}
+\end{figure}
+
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{pictures/fig04-gs-runmean.png}
+    \caption{Running mean plots of $\theta_1$ and $\theta_2$ }
+    \label{fig:gs-runmean}
+\end{figure}
 
 \begin{table}[h!]
 \centering
@@ -944,7 +1008,7 @@ $\theta_2$ & 0.1& 0.5 & -0.8128 & [-1.96, 1.96] \\
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=0.6\linewidth]{pictures/fig05-gs-geweke.png}
+    \includegraphics[width=0.8\linewidth]{pictures/fig05-gs-geweke.png}
     \caption{Geweke diagnostics plots for  $\theta_1$ and $\theta_2$ }
     \label{fig:gs-geweke}
 \end{figure}
@@ -1249,6 +1313,8 @@ The probability \( P\left(\frac{\theta_1}{\theta_2} > 0.45\right) \) was calcula
 
 \section{Appendix}
 
+\subsection{Additional results}
+
 \begin{figure}[!h]
     \centering
     \includegraphics[width=1\linewidth]{pictures/caterpillar.png}
@@ -1437,5 +1503,8 @@ pi[258] & 0.5000 & 0.011411 & 6.588e-05 &0.4775 & 0.5223\\
 \hline
 \end{tabular}
 \end{table}
+
+
+
 
 \end{document}
