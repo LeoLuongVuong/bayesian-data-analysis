@@ -553,6 +553,8 @@ DDKdata <- read.csv("data/bda_data.csv")
 DDKdata <- DDKdata  |> 
   arrange(sex, age, naam)
 
+n_munic <- length(unique(DDKdata$naam))
+
 datajags2 <- list(
   n_munic = length(unique(DDKdata$naam)),
   n_munic_arr = array(1:n_munic, dim = c(300, 5, 2)),
@@ -566,6 +568,9 @@ datajags2 <- list(
   age3 = array(c(DDKdata$age3), dim = c(300, 5, 2)),
   age4 = array(c(DDKdata$age4), dim = c(300, 5, 2))
 )
+
+n_age <- length(unique(DDKdata$age))
+n_sex <- length(unique(DDKdata$sex))
 
 ## winbugs code ----
 
