@@ -18,6 +18,9 @@ DDKdata <- DDKdata  |>
 
 n_munic <- length(unique(DDKdata$naam))
 
+Niag = array(c(DDKdata$invited), dim = c(300, 5, 2)) 
+Yiag = array(c(DDKdata$participant), dim = c(300, 5, 2))
+
 datajags2 <- list(
   n_munic = length(unique(DDKdata$naam)),
   n_munic_arr = array(1:n_munic, dim = c(300, 5, 2)),
@@ -59,7 +62,7 @@ model {
   # Binomial likelihood
   for (i in 1:n_munic) {        # Loop over municipalities
     for (j in 1:n_age) {        # Loop over age groups
-      for (k in 1:n_sex) {      # Loop over genders
+      for (k in 1:n_sex) {      # Loop over n_sexs
   Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])
   logit(pi[i,j,k]) <- alpha[n_munic_arr[i, j, k]] + beta[j]*age1[i,j,k] + 
   beta[j]*age2[i,j,k] + beta[j]*age3[i,j,k] + beta[j]*age4[i,j,k] + 
@@ -84,7 +87,7 @@ inits2 <- function() {
 params <- c("alpha", "beta", "gamma", "mu.int", "sigma.int", 'pi')
 
 ## Run the model ----
-mod2.fit <- jags(
+mod2_uncentered <- jags(
   data = datajags2,
   inits = inits2,
   parameters.to.save = params,
@@ -244,7 +247,7 @@ model {
   # Binomial likelihood
   for (i in 1:n_munic) {        # Loop over municipalities
     for (j in 1:n_age) {        # Loop over age groups
-      for (k in 1:n_sex) {      # Loop over genders
+      for (k in 1:n_sex) {      # Loop over n_sexs
       
         Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])
         
@@ -339,7 +342,7 @@ model {
   # Binomial likelihood
   for (i in 1:n_munic) {        # Loop over municipalities
     for (j in 1:n_age) {        # Loop over age groups
-      for (k in 1:n_sex) {      # Loop over genders
+      for (k in 1:n_sex) {      # Loop over n_sexs
         Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])
         logit(pi[i,j,k]) <- alpha + beta[j]*age1[i,j,k] + 
                           beta[j]*age2[i,j,k] + beta[j]*age3[i,j,k] +
@@ -404,7 +407,7 @@ model {
   for (i in 1:n_munic) {        # Loop over municipalities
   logit(pi[i]) <- mu + b[i]
     for (j in 1:n_age) {        # Loop over age groups
-      for (k in 1:n_sex) {      # Loop over genders
+      for (k in 1:n_sex) {      # Loop over n_sexs
   Yiag[i,j,k] ~ dbin(pi[i], Niag[i,j,k])
       }
     }
@@ -436,7 +439,7 @@ model {
   # Binomial likelihood
   for (i in 1:n_munic) {        # Loop over municipalities
     for (j in 1:n_age) {        # Loop over age groups
-      for (k in 1:n_sex) {      # Loop over genders
+      for (k in 1:n_sex) {      # Loop over n_sexs
   Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])
   
   m[i, j, k] <- beta1[j]*age1[i,j,k] + 
@@ -598,7 +601,7 @@ model {
   # Binomial likelihood
   for (i in 1:n_munic) {        # Loop over municipalities
     for (j in 1:n_age) {        # Loop over age groups
-      for (k in 1:n_sex) {      # Loop over genders
+      for (k in 1:n_sex) {      # Loop over n_sexs
         Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])
         logit(pi[i,j,k]) <- alpha + beta[j]*age1[i,j,k] + 
                           beta[j]*age2[i,j,k] + beta[j]*age3[i,j,k] +
@@ -823,3 +826,72 @@ dev.off()
 print(ggs_diagnostics(bayes2cent.ggmcmc, family = "alpha"), n=500)
 
 #------------------------------------------------------------------
+
+# Shrinkage ----
+
+# Extract the model2_uncentered
+model2_uncentered <- as.mcmc(mod2_uncentered)
+
+# Convert the model2_uncentered to a matrix
+model2_uncentered_matrix <- as.matrix(model2_uncentered)
+
+# Extract the pi values
+pi_values <- model2_uncentered_matrix[, grep("pi", colnames(model2_uncentered_matrix))]
+
+# Calculate the variance for each pi[i, j, k]
+calculated_sd_pi <- apply(pi_values, 2, sd)
+
+posterior_sigma_uncentered <- model2_uncentered[, grep("^sigma", varnames(model2_uncentered))]
+predicted_sd_alpha <- apply(as.matrix(posterior_sigma_uncentered), 1, mean)
+
+
+shrinkage_uncentered <- data.frame(
+  calculated_sd_pi,
+  predicted_sd_alpha,
+  shrinkage_pi = 1 - (calculated_sd_pi / predicted_sd_alpha)
+)
+
+ggplot(shrinkage_uncentered, aes(x = shrinkage_pi)) +
+  geom_histogram(binwidth = 0.005, fill = "skyblue", color = "black") +
+  labs(x = "Shrinkage of pi uncentered model",
+       y = "Frequency") +
+  theme_classic() +
+  theme(axis.title = element_text(size = 10))
+
+ggsave("pictures/fig-07-shrinkage-uncentered.png", width = 9, height = 9, 
+       unit = "cm", dpi = 300)
+
+# centered
+posterior_pi_centered <- model2_centered.sim[, grep("^pi", varnames(model2_centered.sim))]
+posterior_means_centered <- apply(as.matrix(posterior_pi_centered), 2, mean)
+posterior_means_centered <- array(posterior_means_centered, dim = c(n_munic, n_age, n_sex))
+
+
+comparison_centered <- data.frame(
+  Municipality = rep(1:n_munic, each = n_age * n_sex),
+  n_age = rep(1:n_age, times = n_munic * n_sex),
+  n_sex = rep(1:n_sex, each = n_age, times = n_munic),
+  RawEstimate = c(raw_estimates),
+  PosteriorMean = c(posterior_means_centered)
+)
+
+ggplot(comparison_centered, aes(x = RawEstimate, y = PosteriorMean)) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0, color = "red") +
+  labs(title = "Raw Estimates vs Posterior Means", x = "Raw Estimate", y = "Posterior Mean")
+sd_raw_centered <- apply(raw_estimates, 1, sd, na.rm = TRUE)
+sd_posterior_centered <- apply(posterior_means_centered, 1, sd, na.rm = TRUE)
+
+shrinkage_centered <- data.frame(
+  Municipality = 1:n_munic,
+  SD_Raw = sd_raw_centered,
+  SD_Posterior = sd_posterior_centered,
+  Shrinkage = sd_raw_centered - sd_posterior_centered
+)
+
+print(shrinkage_centered)
+
+
+
+
+

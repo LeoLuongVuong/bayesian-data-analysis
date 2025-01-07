@@ -1,0 +1,32 @@
+
+model {
+# Priors
+  for (i in 1:n_munic){
+    for (j in 1:n_age) {
+      for (k in 1:n_sex) {
+        # process model
+        Yiag[i,j,k] ~ dbin(pi[i,j,k], Niag[i,j,k])
+        logit(pi[i,j,k]) <- b[i,j,k]
+        
+        # data model
+        b[i,j,k] ~ dnorm(mu[i,j,k], tau)
+        mu[i,j,k] <- alpha + beta[j]*age1[i,j,k] + 
+                          beta[j]*age2[i,j,k] + beta[j]*age3[i,j,k] +
+                          beta[j]*age4[i,j,k] + gamma[k]*male[i,j,k]
+      }
+    }
+  }
+  
+  # priors for fixed effects
+  alpha ~ dnorm(0, 0.001) # intercept
+  for (j in 1:n_age) {
+    beta[j] ~ dnorm(0, 0.001) # Age effects
+  }
+  
+  for (k in 1:n_sex) {
+    gamma[k] ~ dnorm(0, 0.001) # Sex effects
+  }
+  
+  tau ~ dgamma(0.001, 0.001) # variance of random effects
+}  
+
