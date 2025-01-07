@@ -27,6 +27,7 @@ model {
     gamma[k] ~ dnorm(0, 0.001) # Sex effects
   }
   
-  tau ~ dgamma(0.001, 0.001) # variance of random effects
+  tau <- 1 / (sigma * sigma)
+  sigma ~ dunif(0, 10)
 }  
 

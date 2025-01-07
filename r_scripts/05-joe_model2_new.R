@@ -728,7 +728,8 @@ model {
     gamma[k] ~ dnorm(0, 0.001) # Sex effects
   }
   
-  tau ~ dgamma(0.001, 0.001) # variance of random effects
+  tau <- 1 / (sigma * sigma)
+  sigma ~ dunif(0, 10)
 }  
 ", fill = TRUE)
 sink()
@@ -742,13 +743,13 @@ inits2c <- function() {
   )
 }
 
-params2c <- c("alpha", "beta", "gamma", "tau")
+params2c <- c("alpha", "beta", "gamma", "sigma", "pi")
 
 
 ## Run the model -- r2jags returns an error --
 mod2c.fit <- jags(
   data = datajags23,
-  inits = inits2c,
+  #inits = inits2c,
   parameters.to.save = params2c,
   model.file = "model2cent.txt",
   n.chains = 3,
@@ -829,6 +830,8 @@ print(ggs_diagnostics(bayes2cent.ggmcmc, family = "alpha"), n=500)
 
 # Shrinkage ----
 
+## uncentered model ----------------------------------------------
+
 # Extract the model2_uncentered
 model2_uncentered <- as.mcmc(mod2_uncentered)
 
@@ -838,17 +841,20 @@ model2_uncentered_matrix <- as.matrix(model2_uncentered)
 # Extract the pi values
 pi_values <- model2_uncentered_matrix[, grep("pi", colnames(model2_uncentered_matrix))]
 
-# Calculate the variance for each pi[i, j, k]
-calculated_sd_pi <- apply(pi_values, 2, sd)
+# Apply the logit transformation to each value in pi_values
+logit_pi_values <- log(pi_values / (1 - pi_values))
+
+# Calculate the standard deviation of the logit-transformed values
+calculated_sd_logit_pi <- apply(logit_pi_values, 2, sd)
 
 posterior_sigma_uncentered <- model2_uncentered[, grep("^sigma", varnames(model2_uncentered))]
 predicted_sd_alpha <- apply(as.matrix(posterior_sigma_uncentered), 1, mean)
 
 
 shrinkage_uncentered <- data.frame(
-  calculated_sd_pi,
+  calculated_sd_logit_pi,
   predicted_sd_alpha,
-  shrinkage_pi = 1 - (calculated_sd_pi / predicted_sd_alpha)
+  shrinkage_pi = 1 - (calculated_sd_logit_pi / predicted_sd_alpha)
 )
 
 ggplot(shrinkage_uncentered, aes(x = shrinkage_pi)) +
@@ -861,37 +867,42 @@ ggplot(shrinkage_uncentered, aes(x = shrinkage_pi)) +
 ggsave("pictures/fig-07-shrinkage-uncentered.png", width = 9, height = 9, 
        unit = "cm", dpi = 300)
 
-# centered
-posterior_pi_centered <- model2_centered.sim[, grep("^pi", varnames(model2_centered.sim))]
-posterior_means_centered <- apply(as.matrix(posterior_pi_centered), 2, mean)
-posterior_means_centered <- array(posterior_means_centered, dim = c(n_munic, n_age, n_sex))
+## centered ----------------------------------------------
+model2_centered <- as.mcmc(mod2c.fit)
 
+# Convert the model2_centered to a matrix
+model2_centered_matrix <- as.matrix(model2_centered)
 
-comparison_centered <- data.frame(
-  Municipality = rep(1:n_munic, each = n_age * n_sex),
-  n_age = rep(1:n_age, times = n_munic * n_sex),
-  n_sex = rep(1:n_sex, each = n_age, times = n_munic),
-  RawEstimate = c(raw_estimates),
-  PosteriorMean = c(posterior_means_centered)
-)
+# Extract the pi values
+pi_values_centered <- model2_centered_matrix[, grep("pi", colnames(model2_centered_matrix))]
 
-ggplot(comparison_centered, aes(x = RawEstimate, y = PosteriorMean)) +
-  geom_point() +
-  geom_abline(slope = 1, intercept = 0, color = "red") +
-  labs(title = "Raw Estimates vs Posterior Means", x = "Raw Estimate", y = "Posterior Mean")
-sd_raw_centered <- apply(raw_estimates, 1, sd, na.rm = TRUE)
-sd_posterior_centered <- apply(posterior_means_centered, 1, sd, na.rm = TRUE)
+# Apply the logit transformation to each value in pi_values
+logit_pi_values_centered <- log(pi_values_centered / (1 - pi_values_centered))
 
+# Calculate the standard deviation of the logit-transformed values
+calculated_sd_logit_pi_centered <- apply(logit_pi_values_centered, 2, sd)
+
+# Extract sigma values from the centered model
+posterior_sigma_centered <- model2_centered[, grep("^sigma", varnames(model2_centered))]
+predicted_sd_alpha_centered <- apply(as.matrix(posterior_sigma_centered), 1, mean)
+
+# Calculate shrinkage for the centered model
 shrinkage_centered <- data.frame(
-  Municipality = 1:n_munic,
-  SD_Raw = sd_raw_centered,
-  SD_Posterior = sd_posterior_centered,
-  Shrinkage = sd_raw_centered - sd_posterior_centered
+  calculated_sd_logit_pi_centered,
+  predicted_sd_alpha_centered,
+  shrinkage_pi = 1 - (calculated_sd_logit_pi_centered / predicted_sd_alpha_centered)
 )
 
-print(shrinkage_centered)
+# Plot the shrinkage for the centered model
+ggplot(shrinkage_centered, aes(x = shrinkage_pi)) +
+  geom_histogram(binwidth = 0.005, fill = "skyblue", color = "black") +
+  labs(x = "Shrinkage of pi centered model",
+       y = "Frequency") +
+  theme_classic() +
+  theme(axis.title = element_text(size = 10))
 
-
+ggsave("pictures/fig-08-shrinkage-centered.png", width = 9, height = 9, 
+       unit = "cm", dpi = 300)       
 
 
 
