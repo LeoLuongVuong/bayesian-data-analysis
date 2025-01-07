@@ -625,15 +625,19 @@ In conclusion, we observe better convergence in the hierarchically-centered mode
 
 \subsubsection{Investigate the amount of shrinkage.}
 
-For the uncentered model, we calculated shrinkage as follows: 
-$$1 - \frac{\text{sd}(\pi_i)}{\sigma}$$
-where $\mathrm{sd}(\pi_i)$ is the standard deviation (sd) calculated from all the model-estimated $\pi_{iag}, \quad i = 1, \dots, 300, \quad a = 1, \dots, 5, \quad g = 1, \dots, 2$, and  $\sigma$ is the estimated sd of the random intercept in the model. $\sigma$ is also the model prediced sd. 
+For the uncentered model, we calculated shrinkage as follows:
+\[
+1 - \frac{\text{sd}(\text{logit}(\pi_i))}{\sigma}
+\]
+where \( \text{sd}(\text{logit}(\pi_i)) \) is the standard deviation (sd) calculated from all the model-estimated \( \pi_{iag}, \quad i = 1, \dots, 300, \quad a = 1, \dots, 5, \quad g = 1, \dots, 2 \), and \( \sigma \) is the estimated sd of the random intercept in the model. \( \sigma \) is also the model-predicted sd. Figure \ref{fig:shrinkage-uncentered} shows that the amount of shrinkage in this model is huge, in which most of the shrinkage is above 90 \%.
 
+We did similarly for the centered model.
 
-
-
-
-
+\begin{figure}[H] 
+    \centering    \includegraphics[width=0.8\linewidth]{pictures/fig-07-shrinkage-uncentered.png}
+    \caption{Shrinkage}
+    \label{fig:shrinkage-uncentered}
+\end{figure}
 
 \subsubsection{What do you conclude from this model?}
 
@@ -770,7 +774,18 @@ Similarly as in model 1, we explore the posterior probability that the true part
 
 \subsection{Which of the above models is better? Do a model comparison using information criteria. Investigate whether there are any outlying observations (based on the selected model).}
 
-We use effective number of parameters (pD) and the Deviance Information Criterion (DIC) to compare the two models. pD is computed as the difference between the posterior mean of the deviance and the deviance evaluated at the posterior mean of the parameters. It is essentially a measure of model complexity. DIC is defined as the sum of the posterior mean of the deviance and pD. Both pD and DIC are used to assess model fit and complexity. The aim is to get a good balance between goodness-of-fit and parsimony. 
+We use effective number of parameters (pD) and the Deviance Information Criterion (DIC) to compare the two models. pD is computed as the difference between the posterior mean of the deviance and the deviance evaluated at the posterior mean of the parameters. It is essentially a measure of model complexity. On the other hand, DIC is defined as the sum of the posterior mean of the deviance and pD. 
+
+
+\[
+pD = \overline{D(\theta)} - D(\Bar{\theta})
+\]
+
+\[
+DIC = D(\Bar{\theta}) + 2pD = \overline{D(\theta)} + pD
+\]
+
+Both pD and DIC are used to assess model fit and complexity. The aim is to get a good balance between goodness-of-fit and parsimony. 
 Model 1 has pD = 300.5 and DIC = 40947.8, the hierarchically uncentered version of model 2 has pD =294.3 and DIC=20930.4 while the hierarchically centered version of model 2 has pD=2231.0 and DIC=21894.4. As expected, $pD$ is higher for the more complex hierarchically-centered model 2 as compared to the hierarchically-uncentered version and model 1. The hierarchical centering means that there is a stronger influence of data on the parameters. The hierarchically uncentered model 2 has a substantively lower value of DIC as compared to the other two models (the difference is greater than the recommended threshold of 10). We conclude that the hierarchically uncentered model is the best model offering a balance between parsimony and goodness of fit.  
 
 % % centered: $pD$ = 2974.8 and DIC = 22651.9 \\
@@ -780,6 +795,23 @@ Model 1 has pD = 300.5 and DIC = 40947.8, the hierarchically uncentered version 
 % % model 1: $pD$=302.9 and DIC = 40949.1
 % pD = 300.5 and DIC = 40947.8
 
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lccc}
+\hline
+Parameter   & \text{Municipality} & \text{Age-group} & Gender \\ 
+\hline
+  &   &   &  \\
+  &   &   &  \\
+  &   &   &  \\
+  
+\hline
+\end{tabular}
+\caption{outliers in uncentered model.}
+\label{tab:outliers}
+\end{table}
+\FloatBarrier
 
 
 \newpage
@@ -863,7 +895,7 @@ p(\theta_2 \mid \theta_1, \mathcal{D}) \propto \exp\left\{ -\frac{1}{2} \left( A
 \textbf{Summary} \\
 We have shown that both conditional distributions are Gaussian (normal), a subclass of the exponential family with $\theta_1 \mid \theta_2, D \sim \mathcal{N} \left( \frac{\cos(2\pi+0.3)\theta_2 + 0.3}{1 + 16\theta_2^2}, \frac{1}{1 + 16\theta_2^2} \right)$ and $\theta_2 \mid \theta_1, \mathcal{D} \sim \mathcal{N} \left( \frac{\cos(2\pi + 0.3)\theta_1 + 0.2}{16\theta_1^2 + 1}, \frac{1}{16\theta_1^2 + 1}\right)$
 
-\subsubsection{Conditional posterior mean \(E(\theta_2 \mid \theta_1, \mathcal{D})\) and the conditional posterior variance \(V(\theta_1 \mid \theta_2, \mathcal{D})\).}
+\subsubsection{Conditional posterior mean \(E(\theta_1 \mid \theta_2, \mathcal{D})\) and the conditional posterior variance \(V(\theta_1 \mid \theta_2, \mathcal{D})\).}
 
 We can mathematically derive the conditional posterior mean and variance as described from equations \ref{theta1eq1} - \ref{condtheta4}.  From $\theta_1 \mid \theta_2, D \sim \mathcal{N} \left( \frac{\cos(2\pi+0.3)\theta_2 + 0.3}{1 + 16\theta_2^2}, \frac{1}{1 + 16\theta_2^2} \right)$ we conclude
 $\mathbb{E}(\theta_1 \mid \theta_2, \mathcal{D}) = \frac{\cos(2\pi + 0.3)\theta_2 + 0.3}{16\theta_2^2 + 1}$ and variance  $  \mathrm{Var}(\theta_1 \mid \theta_2, \mathcal{D}) = \frac{1}{16\theta_2^2 + 1}$
