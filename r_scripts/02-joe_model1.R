@@ -1,4 +1,4 @@
-#library(rjags)
+library(rjags)
 library(R2jags)
 library(coda)
 library(readxl)
@@ -52,11 +52,9 @@ datajags <- list(
   Yiag = array(c(bda_data_long$participant), dim = c(300, 5, 2))
 )
 
-# Niag = array(c(bda_data_long$invited), dim = c(300, 5, 2))
-# Niag
-# n_munic <- length(unique(bda_data_long$naam))
-# n_age <- length(unique(bda_data_long$age))
-# n_sex <- length(unique(bda_data_long$sex))
+n_munic <- length(unique(bda_data_long$naam))
+n_age <- length(unique(bda_data_long$age))
+n_sex <- length(unique(bda_data_long$sex))
 
 
 sink("model1.txt")
@@ -96,7 +94,7 @@ my.inits <- list(
 # params to monitor
 params <- c("pi")
 
-# Run the model
+# Run the model ---- r2jags version ---------------------
 mod.fit <- jags(
   data = datajags,
   inits = my.inits, 
@@ -109,7 +107,13 @@ mod.fit <- jags(
   quiet = FALSE
 )
 
-save(mod.fit, file = 'mod.fit')
+# print pD and DIC ---------------------------------------
+options(max.print=999999)
+sink("model1results.txt")
+print(mod.fit)
+sink()
+
+#save(mod.fit, file = 'mod.fit')
 
 par("mar")
 par(mar=c(1,1,1,1))
@@ -127,7 +131,7 @@ sink()
 ## information criterion
 print(mod.fit)
 
-############################################
+####### rjags version -----------------------------------
 jags <- jags.model(file="model1.txt",
                    data = datajags,
                    inits = my.inits,
@@ -236,6 +240,8 @@ png("pictures/trace6-9.png", width = 18,
 MCMCtrace(model.sim, params=c('pi\\[[6-9]\\]'),ISB=FALSE,exact=FALSE,pdf=FALSE)
 dev.off()
 
+MCMCpstr(model.sim)
+
 MCMCsummary(model.sim)
 #########################################################################
 ########## MCMCPLOTS
@@ -256,11 +262,11 @@ rmeanplot(bayes1mcmc)
 library(bayesplot)
 
 # caterpillar plot
-png("pictures/cater1-20.png", width = 18, 
+png("pictures/cater1-40.png", width = 18, 
     height = 9, units = "cm", res = 300)
 mcmc_intervals(model.mcmc, pars=pars[1:20], prob = 0.8, inner_size = 0.9, outer_size = 0.8, prob_outer = 0.95) +
   labs(
-    subtitle = "Caterpillar plot: pi[1:20]"
+    subtitle = "Caterpillar plot: pi[1:40]"
   )
 dev.off()
 png("pictures/cater21-40.png", width = 18, 
