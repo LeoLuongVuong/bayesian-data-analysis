@@ -68,6 +68,58 @@ hist(theta2, breaks = seq(min(theta2), max(theta2), length.out = 200), freq = FA
      col="#fc8961", cex.main=0.8)
 dev.off()
 
+
+# ----- Q-Q plots (first half and second half of theta 1 and theta 2)
+png("pictures/fig03-gs-qqplots.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+
+par(mfrow = c(1, 2))
+
+theta1_1st <- theta1[1:(50000 - 20000)/2]
+theta1_2nd <- theta1[((50000 - 20000)/2 + 1):(50000 - 20000)]
+
+qqplot(theta1_1st, theta1_2nd, xlab = "First half of Theta 1",
+       ylab = "Second half of Theta 1", col = "#51127c")
+
+theta2_1st <- theta2[1:(50000 - 20000)/2]
+theta2_2nd <- theta2[((50000 - 20000)/2 + 1):(50000 - 20000)]
+qqplot(theta2_1st, theta2_2nd, xlab = "First half of Theta 2",
+       ylab = "Second half of Theta 2", col = "#fc8961")
+
+dev.off()
+
+# ------ Running mean to assess stability of the mean
+runmean <- function(x){
+  nlen <- length(x)
+  mean_iteration <- c()
+  mean_iteration[1] <- x[1]
+  for (j in 2:nlen) {
+    mean_iteration[j] <- mean(x[1:j])
+  }
+  return(mean_iteration)
+}
+
+runmean_theta1 <- runmean(theta1)
+runmean_theta2 <- runmean(theta2)
+
+png("pictures/fig04-gs-runmean.png", width = 18, 
+    height = 9, units = "cm", res = 300)
+
+par(mfrow = c(1, 2))
+
+plot(seq_len(50000 - 20000), runmean_theta1, 
+     type = "l", xlab = "Iterations", 
+     ylab = "Theta 1", col = "#51127c", lwd = 2, yaxt = "n")
+axis(2, at = seq(-0.8, 0.2, by = 0.05), las = 2)
+
+plot(seq_len(50000 - 20000), runmean_theta2, 
+     type = "l", xlab = "Iterations", 
+     ylab = "Theta 2", col = "#fc8961", lwd = 2, yaxt = "n")
+axis(2, at = seq(-0.05, 0.25, by = 0.05), las = 2)
+
+dev.off()
+
+
  #of 
 summary(theta1)
 HPDinterval(as.mcmc(theta1))
