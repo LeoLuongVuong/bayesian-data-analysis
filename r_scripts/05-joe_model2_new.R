@@ -7,6 +7,7 @@ library(pacman)
 library(MCMCvis)
 library(mcmcplots)
 library(rjags)
+library(AICcmodavg)
 
 
 # Leo's final ---------------------------------------
@@ -84,7 +85,7 @@ inits2 <- function() {
   )
 }
 
-params <- c("alpha", "beta", "gamma", "mu.int", "sigma.int", 'pi')
+params <- c("beta", "gamma", "mu.int", "sigma.int", "pi", "alpha")
 
 ## Run the model ----
 mod2_uncentered <- jags(
@@ -156,6 +157,9 @@ sink("model2heidel.txt")
 heidel.diag(as.mcmc(mod2.fit))
 sink()
 
+# effective sample size
+effectiveSize(as.mcmc(mod2.fit))
+
 ### library ggmcmc -----------------------------------------------
 library(ggmcmc)
 bayes2mcmcggs <- ggs(bayes2mcmc)
@@ -168,6 +172,11 @@ dev.off()
 png("pictures/mod2autocorr_gamma.png", width = 18, 
     height = 10, units = "cm", res = 300)
 ggs_autocorrelation(bayes2mcmcggs, family = "gamma")
+dev.off()
+
+png("pictures/mod2rmean_muint.png", width = 18, 
+    height = 10, units = "cm", res = 300)
+ggs_running(bayes2mcmcggs, family = "mu.int")
 dev.off()
 
 png("pictures/mod2geweke_sigmaint.png", width = 18, 
@@ -746,7 +755,7 @@ inits2c <- function() {
 params2c <- c("alpha", "beta", "gamma", "sigma", "pi")
 
 
-## Run the model -- r2jags returns an error --
+## Run the model -- r2jags
 mod2c.fit <- jags(
   data = datajags23,
   #inits = inits2c,
@@ -765,13 +774,14 @@ sink("model2cresults.txt")
 print(mod2c.fit)
 sink()
 
-###------ use jags
+###------ using rjags 
 mod2cent.fit <- jags.model(file="model2cent.txt",
                            data = datajags23,
                            n.chains = 3,
                            n.adapt=10000)
 
 update(mod2cent.fit,5000)
+
 model2c.sim <- coda.samples(model = mod2cent.fit,
                             variable.names = params2c,
                             n.iter=10000, 
@@ -782,10 +792,11 @@ sink("model2centres.txt")
 summary(model2c.sim)
 sink()
 
+
 model2centered.mcmc <- as.mcmc.list(model2c.sim)
 
 ##-------convergence checks FINAL --------------------------------------------
-traceplot(model2centered.mcmc, )
+traceplot(model2centered.mcmc)
 rmeanplot(model2centered.mcmc)
 autocorr.plot(model2centered.mcmc)
 geweke.diag(model2centered.mcmc)
@@ -795,7 +806,11 @@ heidel.diag(model2centered.mcmc)
 raftery.diag(model2centered.mcmc)
 effectiveSize(model2centered.mcmc) 
 
+effectiveSize(mod2c.fit)
+
 #### -------------------------------------------------------------------
+traceplot(model2centered.mcmc)
+
 
 ### library ggmcmc -----------------------------------------------
 library(ggmcmc)
@@ -803,24 +818,29 @@ bayes2cent.ggmcmc <- ggs(model2centered.mcmc)
 
 # parameters #alpha, beta,gamma, tau
 
-png("pictures/mod2trace_muint.png", width = 18, 
+png("pictures/centered/centtracetau.png", width = 18, 
     height = 10, units = "cm", res = 300)
-ggs_traceplot(bayes2cent.ggmcmc, family = "beta") #alpha, beta,gamma, tau
+ggs_traceplot(bayes2cent.ggmcmc, family = "tau")
 dev.off()
 
-png("pictures/mod2autocorr_gamma.png", width = 18, 
+png("pictures/centered/centautocortau.png", width = 18, 
     height = 10, units = "cm", res = 300)
-ggs_autocorrelation(bayes2cent.ggmcmc, family = "alpha")
+ggs_autocorrelation(bayes2cent.ggmcmc, family = "tau")
 dev.off()
 
-png("pictures/mod2geweke_sigmaint.png", width = 18, 
+png("pictures/centered/centrmeanalpha.png", width = 18, 
     height = 10, units = "cm", res = 300)
-ggs_geweke(bayes2cent.ggmcmc, family = "alpha")
+ggs_running(bayes2cent.ggmcmc, family = "alpha")
 dev.off()
 
-png("pictures/mod2gbr_gamma.png", width = 18, 
+png("pictures/centered/centgewktau.png", width = 18, 
     height = 10, units = "cm", res = 300)
-ggs_grb(bayes2cent.ggmcmc, family = "alpha")
+ggs_geweke(bayes2cent.ggmcmc, family = "tau")
+dev.off()
+
+png("pictures/centered/centgbraltau.png", width = 18, 
+    height = 10, units = "cm", res = 300)
+ggs_grb(bayes2cent.ggmcmc, family = "tau")
 dev.off()
 
 
